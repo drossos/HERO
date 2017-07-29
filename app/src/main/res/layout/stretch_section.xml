@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/stretch_title"
+        android:gravity="center"
+        android:layout_marginTop="22dp"
+        android:layout_gravity="center"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:textSize="20sp"
+        />
+
+    <Button
+        android:id="@+id/onOff"
+        android:layout_width="250dp"
+        android:layout_height="100dp"
+        android:textColor= "@drawable/text_colour_press"
+        android:textSize = "@dimen/button_text_size"
+        android:gravity="center"
+        android:background="@color/backgroundButtonColor"
+        android:text="@string/button_init_title"
+        android:layout_marginTop="75dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"  />
+
+    <Button
+        android:layout_width="@dimen/daily_choice_width"
+        android:layout_height="@dimen/daily_choice_height"
+        android:gravity="center"
+        android:text="@string/hold_title"
+        android:id="@+id/hold_time"
+        android:layout_below="@+id/onOff"
+        android:layout_alignLeft="@+id/onOff"
+        android:layout_alignStart="@+id/onOff"
+        android:layout_marginTop="15dp"
+        android:background="@color/backgroundButtonColor"/>
+
+    <Button
+        android:id="@+id/extension"
+        android:layout_width="@dimen/daily_choice_width"
+        android:layout_height="@dimen/daily_choice_height"
+        android:gravity="center"
+        android:text="@string/exten_title"
+        android:layout_marginTop="@dimen/space_daily_choice"
+        android:layout_below="@+id/hold_time"
+        android:layout_alignLeft="@+id/hold_time"
+        android:layout_alignStart="@+id/hold_time"
+        android:background="@color/backgroundButtonColor"/>
+
+    <Button
+        android:layout_width="@dimen/daily_choice_width"
+        android:layout_height="@dimen/daily_choice_height"
+        android:gravity="center"
+        android:text="@string/speed_title"
+        android:layout_below="@+id/extension"
+        android:layout_alignLeft="@+id/extension"
+        android:layout_alignStart="@+id/extension"
+        android:layout_marginTop="@dimen/space_daily_choice"
+        android:id="@+id/speed"
+        android:background="@color/backgroundButtonColor"/>
+
+    <Button
+        android:id="@+id/up"
+        android:layout_width="@dimen/up_button_width"
+        android:layout_height="@dimen/up_button_height"
+        android:background="@mipmap/up_arrow"
+        android:layout_alignTop="@+id/hold_time"
+        android:layout_alignRight="@+id/onOff"
+        android:layout_alignEnd="@+id/onOff" />
+
+    <Button
+        android:id="@+id/down"
+        android:layout_width="@dimen/up_button_width"
+        android:layout_height="@dimen/up_button_height"
+        android:background="@mipmap/down_arrow"
+        android:layout_alignBottom="@+id/speed"
+        android:layout_alignLeft="@+id/up"
+        android:layout_alignStart="@+id/up"
+        android:layout_alignRight="@+id/up"
+        android:layout_alignEnd="@+id/up" />
+
+    <TextView
+        android:id="@+id/description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:layout_alignTop="@+id/extension"
+        android:layout_alignLeft="@+id/up"
+        android:layout_alignStart="@+id/up"
+        android:layout_marginTop="15dp"/>
+</RelativeLayout>
