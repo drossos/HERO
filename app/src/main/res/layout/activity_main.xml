@@ -54,7 +54,7 @@
         android:gravity="center"
         android:onClick="goToExercise"
 
-        />
+        android:id="@+id/button" />
     <Button
         android:layout_height="@dimen/main_select_dimen"
         android:text="@string/results_title"
@@ -69,4 +69,11 @@
         android:gravity="center"
         android:onClick="goToResults"
         />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/email_title"
+        android:layout_below="@+id/button"
+        android:layout_centerHorizontal="true"
+        android:onClick="goToEmail"/>
 </RelativeLayout>

@@ -10,4 +10,5 @@
     <string name="flex_title">Flexion</string>
     <string name="exten_title">Extension</string>
     <string name="hold_title">Hold Time</string>
+    <string name="email_title">Talk to Physician</string>
 </resources>

@@ -27,6 +27,9 @@
         <activity android:name=".Stretch">
             android:name= ".Stretch"
         </activity>
+        <activity android:name=".Email">
+            android:name=".Email
+        </activity>
     </application>
 
 </manifest>

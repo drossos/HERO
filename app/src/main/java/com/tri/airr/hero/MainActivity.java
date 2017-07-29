@@ -32,4 +32,8 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(MainActivity.this, Stretch.class);
         startActivity(intent);
     }
+    public void goToEmail (View v){
+        Intent intent = new Intent(MainActivity.this, Email.class);
+        startActivity(intent);
+    }
 }
