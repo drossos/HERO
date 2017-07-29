@@ -19,7 +19,7 @@
         android:ems="10"
         android:inputType="textEmailAddress"
         android:layout_marginTop="30dp"
-        android:hint="email"/>
+        android:hint="Email Adress"/>
 
     <EditText
         android:id="@+id/subject"
