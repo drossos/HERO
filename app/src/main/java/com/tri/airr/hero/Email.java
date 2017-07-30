@@ -15,11 +15,11 @@ import java.util.regex.*;
 public class Email extends AppCompatActivity {
 
     private EditText email,subject,message,error;
-    private Button send;
-    private Intent intent;
-    private Pattern pattern;
-    private Matcher matcher;
-    private final String EMAIL_REGEX = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+     Button send;
+     Intent intent;
+     Pattern pattern;
+     Matcher matcher;
+     final String EMAIL_REGEX = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
             + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
     @Override
     protected void onCreate (Bundle savedInstanceState){
@@ -43,7 +43,7 @@ public class Email extends AppCompatActivity {
                 String messg = message.getText().toString();
 
 
-                    valid = validCheck (reciptient,subj,messg);
+                    valid = validCheck (reciptient);
                     if (valid) {
                         intent = new Intent(intent.ACTION_SEND);
                         intent.putExtra(Intent.EXTRA_EMAIL, new String[]{reciptient});
@@ -59,9 +59,9 @@ public class Email extends AppCompatActivity {
 
             }
         });
-    }   //TODO THERE IS A LOT OF ERROR BUT IS LATE
-//TODO BE READY TO ADD A BETTER EMAL AUTHENTICATOR
-    public boolean validCheck (String recipient, String subj, String messg){
+    }   //TODO consider getting better regex and also adding more paramaters for subj and message
+
+    public boolean validCheck (String recipient){
         matcher = pattern.matcher(recipient);
        return matcher.matches();
     }
