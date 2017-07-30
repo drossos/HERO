@@ -13,7 +13,7 @@ import android.widget.EditText;
 
 public class Email extends AppCompatActivity {
 
-    EditText email,subject,message;
+    EditText email,subject,message,error;
     Button send;
     Intent intent;
 
@@ -25,26 +25,42 @@ public class Email extends AppCompatActivity {
         email = (EditText) findViewById(R.id.email);
         subject = (EditText) findViewById(R.id.subject);
         message = (EditText) findViewById(R.id.message);
-
+        error = (EditText) findViewById((R.id.errorMessage));
         send = (Button) findViewById(R.id.send);
 
         send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                boolean valid = false;
                 String reciptient = email.getText().toString();
                 String subj = subject.getText().toString();
                 String messg = message.getText().toString();
 
-                intent = new Intent(intent.ACTION_SEND);
-                intent.putExtra(Intent.EXTRA_EMAIL, new String [] {reciptient});
-                intent.putExtra(Intent.EXTRA_SUBJECT,subj);
-                intent.putExtra(Intent.EXTRA_TEXT,messg);
 
-                intent.setType("message/rfc822");
-                startActivity(Intent.createChooser(intent, "Select Email App"));
+                    valid = validCheck (reciptient,subj,messg);
+                    if (valid) {
+                        intent = new Intent(intent.ACTION_SEND);
+                        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{reciptient});
+                        intent.putExtra(Intent.EXTRA_SUBJECT, subj);
+                        intent.putExtra(Intent.EXTRA_TEXT, messg);
+                        error.setText("");
+                        intent.setType("message/rfc822");
+                        startActivity(Intent.createChooser(intent, "Select Email App"));
+                    }
+                    else
+                        error.setText("Invalid Email");
+
 
             }
         });
     }
+//TODO BE READY TO ADD A BETTER EMAL AUTHENTICATOR
+    public boolean validCheck (String recipient, String subj, String messg){
+       if (recipient.indexOf("@") != -1 && recipient.indexOf(".com") !=-1 || recipient.indexOf(".ca")!=-1){
+        return true;
+       }
+       return false;
+    }
+
 
 }

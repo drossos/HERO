@@ -67,7 +67,7 @@
         android:id="@+id/up"
         android:layout_width="@dimen/up_button_width"
         android:layout_height="@dimen/up_button_height"
-        android:background="@mipmap/up_arrow"
+        android:background="@drawable/up_background"
         android:layout_alignTop="@+id/hold_time"
         android:layout_alignRight="@+id/onOff"
         android:layout_alignEnd="@+id/onOff" />
@@ -76,7 +76,7 @@
         android:id="@+id/down"
         android:layout_width="@dimen/up_button_width"
         android:layout_height="@dimen/up_button_height"
-        android:background="@mipmap/down_arrow"
+        android:background="@drawable/down_background"
         android:layout_alignBottom="@+id/speed"
         android:layout_alignLeft="@+id/up"
         android:layout_alignStart="@+id/up"

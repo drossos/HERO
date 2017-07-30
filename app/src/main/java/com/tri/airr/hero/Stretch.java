@@ -28,7 +28,6 @@ public class Stretch extends AppCompatActivity {
     int extenLev = 0;
     int spdLev = 0;
     int curr = 0;
-    //TODO make sure to make the up and down buttons work
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 

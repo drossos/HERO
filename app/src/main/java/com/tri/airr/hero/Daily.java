@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Window;
+import android.view.animation.AlphaAnimation;
 import android.widget.Button;
 import android.view.View;
 import android.widget.TextView;
@@ -25,7 +26,7 @@ public class Daily extends AppCompatActivity {
     private Button speed;
     private TextView descript;
     private Button up;
-    //TODO add down button option
+
     private Button down;
     //Counter that decides and shows level
     int flexLev = 0;
