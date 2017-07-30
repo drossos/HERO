@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import java.util.regex.*;
 
 /**
  * Created by Daniel on 7/28/2017.
@@ -13,15 +14,20 @@ import android.widget.EditText;
 
 public class Email extends AppCompatActivity {
 
-    EditText email,subject,message,error;
-    Button send;
-    Intent intent;
-
+    private EditText email,subject,message,error;
+    private Button send;
+    private Intent intent;
+    private Pattern pattern;
+    private Matcher matcher;
+    private final String EMAIL_REGEX = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+            + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
     @Override
     protected void onCreate (Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.email_screen);
 
+        pattern = Pattern.compile(EMAIL_REGEX);
+        email = (EditText) findViewById(R.id.email);
         email = (EditText) findViewById(R.id.email);
         subject = (EditText) findViewById(R.id.subject);
         message = (EditText) findViewById(R.id.message);
@@ -53,13 +59,11 @@ public class Email extends AppCompatActivity {
 
             }
         });
-    }   //TODO THERE IS A LOT OF ERROR BUT IS LATE 
+    }   //TODO THERE IS A LOT OF ERROR BUT IS LATE
 //TODO BE READY TO ADD A BETTER EMAL AUTHENTICATOR
     public boolean validCheck (String recipient, String subj, String messg){
-       if (recipient.indexOf("@") != -1 && recipient.indexOf(".com") !=-1 || recipient.indexOf(".ca")!=-1){
-        return true;
-       }
-       return false;
+        matcher = pattern.matcher(recipient);
+       return matcher.matches();
     }
 
 
