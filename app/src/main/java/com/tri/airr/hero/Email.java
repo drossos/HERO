@@ -53,7 +53,7 @@ public class Email extends AppCompatActivity {
 
             }
         });
-    }
+    }   //TODO THERE IS A LOT OF ERROR BUT IS LATE 
 //TODO BE READY TO ADD A BETTER EMAL AUTHENTICATOR
     public boolean validCheck (String recipient, String subj, String messg){
        if (recipient.indexOf("@") != -1 && recipient.indexOf(".com") !=-1 || recipient.indexOf(".ca")!=-1){
