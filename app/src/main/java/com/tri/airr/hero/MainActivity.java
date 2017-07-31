@@ -64,17 +64,17 @@ public class MainActivity extends AppCompatActivity {
             else if (!bluetoothAdapter.isEnabled()) {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, 0);
+            }
+            if (bluetoothAdapter.isEnabled()){
                 Toast.makeText(getApplicationContext(), "Turned on",Toast.LENGTH_LONG).show();
                 if (!list()){
                     Toast.makeText(getApplicationContext(), "HERO is not a paired device. Please pair hero first",Toast.LENGTH_LONG).show();
-                }
             }
+        }
 
 
 
 
-
-        
         }
         //TODO MAKE IT ABLE TO CONNECT TO THE ARDUINO also clean up look of code
     public boolean list() {
