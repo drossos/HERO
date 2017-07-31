@@ -20,6 +20,8 @@ public class MainActivity extends AppCompatActivity {
     BluetoothAdapter bluetoothAdapter;
     Set<BluetoothDevice> pairedDevices;
     ListView lv;
+    AlertDialog.Builder pairedDevs;
+    BluetoothDevice device;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,31 +68,34 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Already on", Toast.LENGTH_LONG).show();
             }
                 if (bluetoothAdapter.isEnabled()){
-                    AlertDialog.Builder pairedDevs = new AlertDialog.Builder(
-                            context);
-                  // list();
-
-                    pairedDevs.setTitle("test");
-                    // create alert dialog
-                    AlertDialog alertDialog = pairedDevs.create();
-
-                    // show it
-                    alertDialog.show();
+                    if (!list()){
+                        Toast.makeText(getApplicationContext(), "HERO is not a paired device. Please pair hero first",Toast.LENGTH_LONG).show();
+                    }
                 }
 
 
         }
-    public void list(){
+        //TODO MAKE IT ABLE TO CONNECT TO THE ARDUINO also clean up look of code
+    public boolean list() {
         pairedDevices = bluetoothAdapter.getBondedDevices();
 
-        ArrayList list = new ArrayList();
+        if (pairedDevices.isEmpty()) {
 
-        for(BluetoothDevice bt : pairedDevices) list.add(bt.getName());
-        Toast.makeText(getApplicationContext(), "Showing Paired Devices",Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Please Pair the Device first", Toast.LENGTH_SHORT).show();
 
-        final ArrayAdapter adapter = new  ArrayAdapter(this,android.R.layout.simple_list_item_1, list);
+        } else  for (BluetoothDevice iterator : pairedDevices) {
 
-        lv.setAdapter(adapter);
+            if(iterator.getAddress().equals("sa")){ //Replace with iterator.getName() if comparing Device names.
+
+                device=iterator; //device is an object of type BluetoothDevice
+
+                return true;
+
+
+
+            }
+        }
+        return false;
     }
 
     }
