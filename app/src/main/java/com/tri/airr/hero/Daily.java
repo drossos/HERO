@@ -136,7 +136,7 @@ public class Daily extends AppCompatActivity {
             if (curr == FLEX)
                 descript.setText("Flexion: "+ flexLev);
             if (curr== EXTEN)
-                descript.setText("Challenge Level: " + extenLev);
+                descript.setText("Extension: " + extenLev);
             if (curr == SPD)
                 descript.setText("Speed:" + spdLev);
     }
