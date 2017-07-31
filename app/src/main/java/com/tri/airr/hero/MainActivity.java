@@ -64,10 +64,9 @@ public class MainActivity extends AppCompatActivity {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, 0);
                 Toast.makeText(getApplicationContext(), "Turned on",Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(getApplicationContext(), "Already on", Toast.LENGTH_LONG).show();
             }
-                if (bluetoothAdapter.isEnabled()){
+
+            if (bluetoothAdapter.isEnabled()){
                     if (!list()){
                         Toast.makeText(getApplicationContext(), "HERO is not a paired device. Please pair hero first",Toast.LENGTH_LONG).show();
                     }
