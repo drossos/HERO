@@ -68,9 +68,14 @@ public class MainActivity extends AppCompatActivity {
                 if (bluetoothAdapter.isEnabled()){
                     AlertDialog.Builder pairedDevs = new AlertDialog.Builder(
                             context);
-                   list();
+                  // list();
 
                     pairedDevs.setTitle("test");
+                    // create alert dialog
+                    AlertDialog alertDialog = pairedDevs.create();
+
+                    // show it
+                    alertDialog.show();
                 }
 
 
