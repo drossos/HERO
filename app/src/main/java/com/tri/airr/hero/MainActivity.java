@@ -3,19 +3,20 @@ package com.tri.airr.hero;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
-import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
+import android.content.Context;
 
 import java.util.ArrayList;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
+    final Context context = this;
     BluetoothAdapter bluetoothAdapter;
     Set<BluetoothDevice> pairedDevices;
     ListView lv;
@@ -23,7 +24,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        lv = (ListView)findViewById(R.id.listView);
 
     }
 
@@ -66,7 +66,11 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Already on", Toast.LENGTH_LONG).show();
             }
                 if (bluetoothAdapter.isEnabled()){
+                    AlertDialog.Builder pairedDevs = new AlertDialog.Builder(
+                            context);
                    list();
+
+                    pairedDevs.setTitle("test");
                 }
 
 
