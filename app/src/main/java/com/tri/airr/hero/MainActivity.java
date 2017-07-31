@@ -74,8 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
-
+        
         }
         //TODO MAKE IT ABLE TO CONNECT TO THE ARDUINO also clean up look of code
     public boolean list() {
