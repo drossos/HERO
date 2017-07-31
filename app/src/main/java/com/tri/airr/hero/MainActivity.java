@@ -1,20 +1,29 @@
 package com.tri.airr.hero;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.ArrayList;
+import java.util.Set;
 
+public class MainActivity extends AppCompatActivity {
+    BluetoothAdapter bluetoothAdapter;
+    Set<BluetoothDevice> pairedDevices;
+    ListView lv;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        lv = (ListView)findViewById(R.id.listView);
 
     }
 
@@ -45,15 +54,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void BluetoothConnect (){
-            BluetoothAdapter bluetoothAdapter=BluetoothAdapter.getDefaultAdapter();
+            bluetoothAdapter=BluetoothAdapter.getDefaultAdapter();
             if (bluetoothAdapter == null) {
                 Toast.makeText(getApplicationContext(),"Device doesnt Support Bluetooth",Toast.LENGTH_SHORT).show();
             }
-            if (!bluetoothAdapter.isEnabled()) {
+            else if (!bluetoothAdapter.isEnabled()) {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, 0);
+                Toast.makeText(getApplicationContext(), "Turned on",Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "Already on", Toast.LENGTH_LONG).show();
             }
+                if (bluetoothAdapter.isEnabled()){
+                   list();
+                }
+
 
         }
+    public void list(){
+        pairedDevices = bluetoothAdapter.getBondedDevices();
+
+        ArrayList list = new ArrayList();
+
+        for(BluetoothDevice bt : pairedDevices) list.add(bt.getName());
+        Toast.makeText(getApplicationContext(), "Showing Paired Devices",Toast.LENGTH_SHORT).show();
+
+        final ArrayAdapter adapter = new  ArrayAdapter(this,android.R.layout.simple_list_item_1, list);
+
+        lv.setAdapter(adapter);
+    }
+
     }
 
