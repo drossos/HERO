@@ -12,6 +12,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
     }
 
     public void goToDaily (View v){
@@ -35,5 +36,8 @@ public class MainActivity extends AppCompatActivity {
     public void goToEmail (View v){
         Intent intent = new Intent(MainActivity.this, Email.class);
         startActivity(intent);
+    }
+    public void connectBluetooth (View v){
+        BluetoothConnect connect = new BluetoothConnect();
     }
 }

@@ -65,4 +65,15 @@
         android:onClick="goToEmail"
         android:layout_marginTop="15dp"
         android:id="@+id/button5" />
+    <Button
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:text="connect to HERO"
+        android:layout_below="@+id/button5"
+        android:layout_centerHorizontal="true"
+        android:onClick="connectBluetooth"
+        android:layout_marginTop="15dp"
+        android:id="@+id/bt_connect"
+        />
+
 </RelativeLayout>
