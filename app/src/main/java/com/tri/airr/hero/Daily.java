@@ -8,10 +8,16 @@ import android.view.animation.AlphaAnimation;
 import android.widget.Button;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.stream.*;
 
+import static com.tri.airr.hero.MainActivity.connected;
+import static com.tri.airr.hero.MainActivity.outputStream;
 
+//TODO CHANGE IT SO METHODS ARE CALLED INSTEAD OF ONCLICK LISTENERS THAT WAY CAN KEEP THE WHOLE CODE IN A LISTENING AND RECEVING LOOP
 /**
  * Created by drossos on 7/26/2017.
  */
@@ -33,6 +39,7 @@ public class Daily extends AppCompatActivity {
     int extenLev = 0;
     int spdLev = 0;
     int curr = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -49,6 +56,8 @@ public class Daily extends AppCompatActivity {
         up = (Button) findViewById(R.id.up);
         down = (Button) findViewById(R.id.down);
 
+        //on and off button
+        //TODO have to add update status so when button is turned off motor stops
         onOff.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -99,46 +108,57 @@ public class Daily extends AppCompatActivity {
             }
 
         });
-
+        //Controls the different aspcets of the motor with the up and down arrows
+        //TODO find a way witht he arduino code the make this work after that should be easy
         up.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (curr == FLEX)
+                if (curr == FLEX) {
                     flexLev++;
-                else if(curr == EXTEN)
+                    //THIS IS JUST SAMPLE CODE TO SAY THIS IS HOW THE APP WOULD WORK
+                    if (connected) try {
+                        outputStream.write(flexLev);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else if (curr == EXTEN)
                     extenLev++;
-                else if(curr == SPD){
+                else if (curr == SPD) {
                     spdLev++;
+                } else {
                 }
-                else {}
                 updateText(curr);
 
             }
         });
-        down.setOnClickListener(new View.OnClickListener(){
+        down.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View v) {
-                if (curr == FLEX && flexLev !=0)
+                if (curr == FLEX && flexLev != 0)
                     flexLev--;
-                else if (curr == EXTEN && extenLev !=0)
+                else if (curr == EXTEN && extenLev != 0)
                     extenLev--;
-                else if (curr == SPD && spdLev !=0) {
+                else if (curr == SPD && spdLev != 0) {
                     spdLev--;
                 } else {
                 }
                 updateText(curr);
             }
         });
+
     }
 
-        public void updateText(int curr){
-            descript = (TextView)findViewById(R.id.description);
-            if (curr == FLEX)
-                descript.setText("Flexion: "+ flexLev);
-            if (curr== EXTEN)
-                descript.setText("Extension: " + extenLev);
-            if (curr == SPD)
-                descript.setText("Speed:" + spdLev);
+    public void updateText(int curr) {
+        descript = (TextView) findViewById(R.id.description);
+        if (curr == FLEX)
+            descript.setText("Flexion: " + flexLev);
+        if (curr == EXTEN)
+            descript.setText("Extension: " + extenLev);
+        if (curr == SPD)
+            descript.setText("Speed:" + spdLev);
     }
+
 
 }
+
+

@@ -23,15 +23,16 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
     final Context context = this;
-    BluetoothAdapter bluetoothAdapter;
-    Set<BluetoothDevice> pairedDevices;
+    public static BluetoothAdapter bluetoothAdapter;
+    public static Set<BluetoothDevice> pairedDevices;
     ListView lv;
     AlertDialog.Builder pairedDevs;
-    BluetoothDevice device;
-    BluetoothSocket socket;
+    public static BluetoothDevice device;
+    public static BluetoothSocket socket;
     private final UUID PORT_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
-    private OutputStream outputStream;
-    private InputStream inputStream;
+    public static OutputStream outputStream;
+    public static InputStream inputStream;
+    public static boolean connected;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void BluetoothConnect () {
-        boolean connected = false;
+        connected = false;
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         //checks if device has B.T capabilties
         if (bluetoothAdapter == null) {
@@ -80,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         //if B.T is already enabled it checks to see if HERO device is paired
         if (bluetoothAdapter.isEnabled()) {
             if (!list()) {
-                Toast.makeText(getApplicationContext(), "HERO is not a paired device. Please pair hero first", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "HERO is not a paired device. Please pair HERO first", Toast.LENGTH_LONG).show();
             } else {
                 //TODO TRY AND FIGURE THIS CODE OUT BETTER TO MAKE IT WORK LATER
                 connected = true;
@@ -88,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
                     socket = device.createRfcommSocketToServiceRecord(PORT_UUID);
                     socket.connect();
                 } catch (IOException e) {
+                    Toast.makeText(getApplicationContext(), "Failed to connect", Toast.LENGTH_LONG).show();
                     e.printStackTrace();
                     connected = false;
                 }
@@ -103,6 +105,8 @@ public class MainActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
+                if (connected)
+                    Toast.makeText(getApplicationContext(), "Connected to HERO", Toast.LENGTH_LONG).show();
             }
 
 
@@ -130,6 +134,8 @@ public class MainActivity extends AppCompatActivity {
         }
         return false;
     }
+
+
 
     }
 
