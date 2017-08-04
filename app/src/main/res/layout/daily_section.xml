@@ -27,7 +27,8 @@
         android:text="@string/button_init_title"
         android:layout_marginTop="75dp"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:onClick="onOffSelect"/>
 
     <Button
         android:layout_width="@dimen/daily_choice_width"
@@ -39,7 +40,9 @@
         android:layout_alignLeft="@id/onOff"
         android:layout_alignStart="@+id/onOff"
         android:layout_marginTop="15dp"
-        android:background="@color/backgroundButtonColor"/>
+        android:background="@color/backgroundButtonColor"
+        android:onClick="flexSelect"/>
+
 
     <Button
         android:id="@+id/extension"
@@ -51,7 +54,8 @@
         android:layout_below="@+id/flexion"
         android:layout_alignLeft="@+id/flexion"
         android:layout_alignStart="@+id/flexion"
-        android:background="@color/backgroundButtonColor"/>
+        android:background="@color/backgroundButtonColor"
+        android:onClick="extenSelect"/>
 
     <Button
         android:layout_width="@dimen/daily_choice_width"
@@ -63,7 +67,8 @@
         android:layout_alignStart="@+id/extension"
         android:layout_marginTop="@dimen/space_daily_choice"
         android:id="@+id/speed"
-        android:background="@color/backgroundButtonColor"/>
+        android:background="@color/backgroundButtonColor"
+        android:onClick="speedSelect"/>
 
     <Button
         android:id="@+id/up"
@@ -73,7 +78,8 @@
         android:layout_alignTop="@+id/flexion"
         android:layout_alignRight="@+id/onOff"
         android:layout_alignEnd="@+id/onOff"
-        android:padding="5dp"/>
+        android:padding="5dp"
+        android:onClick="upSelect"/>
 
     <Button
         android:id="@+id/down"
@@ -85,6 +91,7 @@
         android:layout_alignStart="@+id/up"
         android:layout_alignRight="@+id/up"
         android:layout_alignEnd="@+id/up"
+        android:onClick="downSelect"
         />
     <TextView
         android:id="@+id/description"

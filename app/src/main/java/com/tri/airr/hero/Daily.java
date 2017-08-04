@@ -1,6 +1,7 @@
 package com.tri.airr.hero;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Window;
@@ -12,10 +13,10 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.ThreadFactory;
 import java.util.stream.*;
 
-import static com.tri.airr.hero.MainActivity.connected;
-import static com.tri.airr.hero.MainActivity.outputStream;
+
 
 //TODO CHANGE IT SO METHODS ARE CALLED INSTEAD OF ONCLICK LISTENERS THAT WAY CAN KEEP THE WHOLE CODE IN A LISTENING AND RECEVING LOOP
 /**
@@ -32,8 +33,9 @@ public class Daily extends AppCompatActivity {
     private Button speed;
     private TextView descript;
     private Button up;
-
+    private boolean stopThread;
     private Button down;
+    byte buffer[];
     //Counter that decides and shows level
     int flexLev = 0;
     int extenLev = 0;
@@ -58,9 +60,9 @@ public class Daily extends AppCompatActivity {
 
         //on and off button
         //TODO have to add update status so when button is turned off motor stops
-        onOff.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        thread();
+    }
+        public void onOffSelect(View v) {
                 if (on) {
                     on = false;
                     onOff.setBackgroundColor(Color.RED);
@@ -71,11 +73,10 @@ public class Daily extends AppCompatActivity {
                     onOff.setText("ON");
                 }
             }
-        });
 
-        flexion.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+
+        public void flexSelect (View c){
+
                 curr = FLEX;
                 flexion.setBackgroundColor(Color.GRAY);
                 extension.setBackgroundColor(Color.parseColor("#add8e6"));
@@ -83,10 +84,7 @@ public class Daily extends AppCompatActivity {
                 updateText(curr);
             }
 
-        });
-        extension.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        public void extenSelect(View v) {
                 curr = EXTEN;
                 flexion.setBackgroundColor(Color.parseColor("#add8e6"));
                 extension.setBackgroundColor(Color.GRAY);
@@ -95,11 +93,9 @@ public class Daily extends AppCompatActivity {
 
             }
 
-        });
 
-        speed.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+
+       public void speedSelect(View v){
                 curr = SPD;
                 speed.setBackgroundColor(Color.GRAY);
                 extension.setBackgroundColor(Color.parseColor("#add8e6"));
@@ -107,20 +103,13 @@ public class Daily extends AppCompatActivity {
                 updateText(curr);
             }
 
-        });
+
         //Controls the different aspcets of the motor with the up and down arrows
         //TODO find a way witht he arduino code the make this work after that should be easy
-        up.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        public void upSelect(View v){
                 if (curr == FLEX) {
                     flexLev++;
                     //THIS IS JUST SAMPLE CODE TO SAY THIS IS HOW THE APP WOULD WORK
-                    if (connected) try {
-                        outputStream.write(flexLev);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                 } else if (curr == EXTEN)
                     extenLev++;
                 else if (curr == SPD) {
@@ -130,10 +119,8 @@ public class Daily extends AppCompatActivity {
                 updateText(curr);
 
             }
-        });
-        down.setOnClickListener(new View.OnClickListener() {
 
-            public void onClick(View v) {
+       public void downSelect(View v){
                 if (curr == FLEX && flexLev != 0)
                     flexLev--;
                 else if (curr == EXTEN && extenLev != 0)
@@ -144,9 +131,9 @@ public class Daily extends AppCompatActivity {
                 }
                 updateText(curr);
             }
-        });
 
-    }
+
+
 
     public void updateText(int curr) {
         descript = (TextView) findViewById(R.id.description);
@@ -157,6 +144,23 @@ public class Daily extends AppCompatActivity {
         if (curr == SPD)
             descript.setText("Speed:" + spdLev);
     }
+
+    void thread(){
+        final Handler handler = new Handler();
+        stopThread = false;
+        buffer = new byte[1024];
+        Thread thread  = new Thread(new Runnable()
+        {
+            public void run()
+            {
+
+
+            }
+        });
+
+        thread.start();
+    }
+
 
 
 }
