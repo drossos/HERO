@@ -12,8 +12,11 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -32,19 +35,16 @@ import java.util.UUID;
 
 
 public class MainActivity extends AppCompatActivity {
-    private BluetoothAdapter mBluetoothAdapter;
-    private final int REQUEST_ENABLE_BT = 0;
 
-    private boolean mScanning;
-    private Handler mHandler;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        mBluetoothAdapter = bluetoothManager.getAdapter();
 
     }
 
@@ -75,28 +75,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void connectBluetooth(View v) {
-        btCheck();
-
+        Intent intent = new Intent(MainActivity.this, BluetoothConnect.class);
+        startActivity(intent);
     }
 
-    private void btCheck() {
-        if (mBluetoothAdapter == null ) {
-            Toast.makeText(getApplicationContext(),"Device doesnt Support Bluetooth",Toast.LENGTH_SHORT).show();
-        }
-        if(!mBluetoothAdapter.isEnabled()){
-            Intent enableAdapter = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableAdapter, 0);
-
-        }
-
-    }
-
-    private void scanLeDevice(final boolean enable) {
-
-    }
-
-    }
-
+}
 
 
 
