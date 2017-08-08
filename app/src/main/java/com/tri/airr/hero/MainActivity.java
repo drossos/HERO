@@ -32,16 +32,19 @@ import java.util.UUID;
 
 
 public class MainActivity extends AppCompatActivity {
+    private BluetoothAdapter mBluetoothAdapter;
+    private final int REQUEST_ENABLE_BT = 0;
 
-
+    private boolean mScanning;
+    private Handler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        BluetoothManager btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        //Adapter = btManager.getAdapter();
+        final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        mBluetoothAdapter = bluetoothManager.getAdapter();
 
     }
 
@@ -77,6 +80,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void btCheck() {
+        if (mBluetoothAdapter == null ) {
+            Toast.makeText(getApplicationContext(),"Device doesnt Support Bluetooth",Toast.LENGTH_SHORT).show();
+        }
+        if(!mBluetoothAdapter.isEnabled()){
+            Intent enableAdapter = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableAdapter, 0);
+
+        }
+
+    }
+
+    private void scanLeDevice(final boolean enable) {
 
     }
 
