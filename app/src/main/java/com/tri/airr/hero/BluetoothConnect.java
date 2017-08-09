@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
@@ -26,6 +27,9 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.List;
+import java.util.UUID;
+
 /**
  * Created by Daniel on 7/31/2017.
  */
@@ -36,12 +40,18 @@ public class BluetoothConnect extends AppCompatActivity {
     BluetoothLeScanner btScanner;
     Button startScanningButton;
     Button stopScanningButton;
-    TextView peripheralTextView;
+    TextView peripheralTextView, testText;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
     private BluetoothDevice hero;
     public static BluetoothGatt heroGatt;
     public final String HERO_MAC = "E3:8E:E4:56:FF:4F";
+    //UUID here are for the different services/characterisits
+    public static final UUID RBL_SERVICE_UUID = UUID.fromString("713d0000-503e-4c75-ba94-3148f18d941e");
+    public static final UUID RBL_CHAR_TX_UUID = UUID.fromString("713d0002-503e-4c75-ba94-3148f18d941e");
+    public static final UUID RBL_CHAR_RX_UUID = UUID.fromString("713d0003-503e-4c75-ba94-3148f18d941e");
+    public static final UUID RBL_TX_UUID_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
     //TODO ADD CODE TO CALLBACK LATER
+    //TODO REMINDER THAT GATT CONNECTION IS MAINTED ACROSS ACTIVITIES
     private final BluetoothGattCallback heroGattCallBack = new BluetoothGattCallback() {
     };
 
@@ -53,7 +63,7 @@ public class BluetoothConnect extends AppCompatActivity {
 
         peripheralTextView = (TextView) findViewById(R.id.PeripheralTextView);
         peripheralTextView.setMovementMethod(new ScrollingMovementMethod());
-
+        testText = (TextView) findViewById(R.id.test_area);
         startScanningButton = (Button) findViewById(R.id.StartScanButton);
         startScanningButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -143,10 +153,11 @@ public class BluetoothConnect extends AppCompatActivity {
             // if there is no need to scroll, scrollAmount will be <=0
             if (scrollAmount > 0)
                 peripheralTextView.scrollTo(0, scrollAmount);
-            if(result.getDevice().getName().equals("TXRX")) {
+            if(result.getDevice().getAddress().equals(HERO_MAC)) {
                 hero = result.getDevice();
                 Toast.makeText(getApplicationContext(), "Found HERO", Toast.LENGTH_SHORT).show();
                 heroGatt = result.getDevice().connectGatt(getApplicationContext(), false, heroGattCallBack);
+                connectGatt();
 
             }
         }
@@ -204,5 +215,13 @@ public class BluetoothConnect extends AppCompatActivity {
             }
         });
     }
+    //TODO AM ABLE TO CONNECT TO THE GATT SERVER AND CREATE A WRITER, BUT NEED TO MAKE THE DATA DO SOMETHING
+    public void connectGatt(){
+        heroGatt.connect();
+        heroGatt.discoverServices();
+        heroGatt.executeReliableWrite();
+
+    }
+
 
 }

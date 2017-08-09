@@ -16,6 +16,9 @@ import java.io.OutputStream;
 import java.util.concurrent.ThreadFactory;
 import java.util.stream.*;
 
+import static com.tri.airr.hero.BluetoothConnect.RBL_CHAR_TX_UUID;
+import static com.tri.airr.hero.BluetoothConnect.RBL_SERVICE_UUID;
+import static com.tri.airr.hero.BluetoothConnect.heroGatt;
 
 
 //TODO CHANGE IT SO METHODS ARE CALLED INSTEAD OF ONCLICK LISTENERS THAT WAY CAN KEEP THE WHOLE CODE IN A LISTENING AND RECEVING LOOP
@@ -67,6 +70,10 @@ public class Daily extends AppCompatActivity {
                     on = false;
                     onOff.setBackgroundColor(Color.RED);
                     onOff.setText("OFF");
+                    //sample data to send to device: [0x01,0x00, 0x00]
+                    //TODO trying to test for the ability to write new values to characteristis, think this would be way to change levels of device
+                    // crashes when you try to get char, might be because char is not in that service potentialy
+                   //heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_TX_UUID).setValue(new byte [0x01]);
                 } else {
                     on = true;
                     onOff.setBackgroundColor(Color.GREEN);
