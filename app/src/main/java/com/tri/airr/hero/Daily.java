@@ -23,6 +23,7 @@ import java.util.stream.*;
 import static com.tri.airr.hero.BluetoothConnect.RBL_CHAR_TX_UUID;
 import static com.tri.airr.hero.BluetoothConnect.RBL_SERVICE_UUID;
 import static com.tri.airr.hero.BluetoothConnect.TAG;
+import static com.tri.airr.hero.BluetoothConnect.connected;
 import static com.tri.airr.hero.BluetoothConnect.heroGatt;
 import static com.tri.airr.hero.BluetoothConnect.motorControl;
 
@@ -45,12 +46,14 @@ public class Daily extends AppCompatActivity {
     private boolean stopThread;
     private Button down;
     byte buffer[];
+    private boolean optionSelected;
     //Counter that decides and shows level
     int flexLev = 0;
     int extenLev = 0;
     int spdLev = 0;
     int curr = 0;
-    byte [] commandDat = {0x01, 0x03, 0x00};
+    byte [] commandDat = {0x03,
+            0x04, 0x04};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +89,7 @@ public class Daily extends AppCompatActivity {
 
 
         public void flexSelect (View c){
-
+                optionSelected = true;
                 curr = FLEX;
                 flexion.setBackgroundColor(Color.GRAY);
                 extension.setBackgroundColor(Color.parseColor("#add8e6"));
@@ -95,6 +98,7 @@ public class Daily extends AppCompatActivity {
             }
 
         public void extenSelect(View v) {
+                optionSelected = true;
                 curr = EXTEN;
                 flexion.setBackgroundColor(Color.parseColor("#add8e6"));
                 extension.setBackgroundColor(Color.GRAY);
@@ -106,6 +110,7 @@ public class Daily extends AppCompatActivity {
 
 
        public void speedSelect(View v){
+                optionSelected = true;
                 curr = SPD;
                 speed.setBackgroundColor(Color.GRAY);
                 extension.setBackgroundColor(Color.parseColor("#add8e6"));
@@ -151,8 +156,8 @@ public class Daily extends AppCompatActivity {
             descript.setText("Extension: " + extenLev);
         if (curr == SPD)
             descript.setText("Speed:" + spdLev);
-
-        updateMotor();
+        if (connected && optionSelected)
+            updateMotor();
     }
     //TODO make it so updates data with correct values
     private void updateMotor(){

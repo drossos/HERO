@@ -18,6 +18,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.LocationManager;
 import android.nfc.Tag;
 import android.os.AsyncTask;
@@ -51,7 +52,8 @@ public class BluetoothConnect extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
     public static BluetoothDevice hero;
     public static BluetoothGatt heroGatt;
-    public final String HERO_MAC = "E3:8E:E4:56:FF:4F";
+    //TODO FIND BETTER WAY THAT ALLOWS FOR NON HARDCODED ADRESS
+    public final String HERO_MAC = "D1:85:3B:0F:02:AF";//"E3:8E:E4:56:FF:4F";
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
@@ -61,6 +63,7 @@ public class BluetoothConnect extends AppCompatActivity {
     public static final UUID RBL_CHAR_RX_UUID = UUID.fromString("713d0003-503e-4c75-ba94-3148f18d941e");
     public static final UUID RBL_TX_UUID_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
     public static BluetoothGattCharacteristic motorControl;
+    public static boolean connected;
 
 
     @Override
@@ -74,7 +77,11 @@ public class BluetoothConnect extends AppCompatActivity {
         startScanningButton = (Button) findViewById(R.id.StartScanButton);
         startScanningButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                startScanning();
+                if (getApplicationContext().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED || !btAdapter.isEnabled()){
+                    peripheralTextView.setText("Make sure that GPS and Bluetooth services are enabeld");
+                } else {
+                    startScanning();
+                }
             }
         });
 
@@ -269,6 +276,7 @@ public class BluetoothConnect extends AppCompatActivity {
     }
     public void connectGatt(){
         heroGatt.connect();
+        connected = true;
     }
     //checks to see if it is possible to send data|-used only for testing
     public void testConnect(){
