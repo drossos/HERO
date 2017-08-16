@@ -1,9 +1,12 @@
 package com.tri.airr.hero;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattService;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Window;
 import android.view.animation.AlphaAnimation;
 import android.widget.Button;
@@ -13,12 +16,15 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.concurrent.ThreadFactory;
 import java.util.stream.*;
 
 import static com.tri.airr.hero.BluetoothConnect.RBL_CHAR_TX_UUID;
 import static com.tri.airr.hero.BluetoothConnect.RBL_SERVICE_UUID;
+import static com.tri.airr.hero.BluetoothConnect.TAG;
 import static com.tri.airr.hero.BluetoothConnect.heroGatt;
+import static com.tri.airr.hero.BluetoothConnect.motorControl;
 
 
 //TODO CHANGE IT SO METHODS ARE CALLED INSTEAD OF ONCLICK LISTENERS THAT WAY CAN KEEP THE WHOLE CODE IN A LISTENING AND RECEVING LOOP
@@ -44,6 +50,7 @@ public class Daily extends AppCompatActivity {
     int extenLev = 0;
     int spdLev = 0;
     int curr = 0;
+    byte [] commandDat = {0x01, 0x03, 0x00};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,19 +68,15 @@ public class Daily extends AppCompatActivity {
         up = (Button) findViewById(R.id.up);
         down = (Button) findViewById(R.id.down);
 
-        //on and off button
-        //TODO have to add update status so when button is turned off motor stops
-        thread();
+        //array containg data to be sent to device
+        //TODO CHANGE FROM TEST
     }
+    //on and off button
         public void onOffSelect(View v) {
                 if (on) {
                     on = false;
                     onOff.setBackgroundColor(Color.RED);
                     onOff.setText("OFF");
-                    //sample data to send to device: [0x01,0x00, 0x00]
-                    //TODO trying to test for the ability to write new values to characteristis, think this would be way to change levels of device
-                    // crashes when you try to get char, might be because char is not in that service potentialy
-                   //heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_TX_UUID).setValue(new byte [0x01]);
                 } else {
                     on = true;
                     onOff.setBackgroundColor(Color.GREEN);
@@ -88,7 +91,7 @@ public class Daily extends AppCompatActivity {
                 flexion.setBackgroundColor(Color.GRAY);
                 extension.setBackgroundColor(Color.parseColor("#add8e6"));
                 speed.setBackgroundColor(Color.parseColor("#add8e6"));
-                updateText(curr);
+                updateStatus(curr);
             }
 
         public void extenSelect(View v) {
@@ -96,7 +99,7 @@ public class Daily extends AppCompatActivity {
                 flexion.setBackgroundColor(Color.parseColor("#add8e6"));
                 extension.setBackgroundColor(Color.GRAY);
                 speed.setBackgroundColor(Color.parseColor("#add8e6"));
-                updateText(curr);
+                updateStatus(curr);
 
             }
 
@@ -107,23 +110,21 @@ public class Daily extends AppCompatActivity {
                 speed.setBackgroundColor(Color.GRAY);
                 extension.setBackgroundColor(Color.parseColor("#add8e6"));
                 flexion.setBackgroundColor(Color.parseColor("#add8e6"));
-                updateText(curr);
+                updateStatus(curr);
             }
 
 
         //Controls the different aspcets of the motor with the up and down arrows
-        //TODO find a way witht he arduino code the make this work after that should be easy
         public void upSelect(View v){
                 if (curr == FLEX) {
                     flexLev++;
-                    //THIS IS JUST SAMPLE CODE TO SAY THIS IS HOW THE APP WOULD WORK
                 } else if (curr == EXTEN)
                     extenLev++;
                 else if (curr == SPD) {
                     spdLev++;
                 } else {
                 }
-                updateText(curr);
+                updateStatus(curr);
 
             }
 
@@ -136,13 +137,13 @@ public class Daily extends AppCompatActivity {
                     spdLev--;
                 } else {
                 }
-                updateText(curr);
+                updateStatus(curr);
             }
 
 
 
 
-    public void updateText(int curr) {
+    public void updateStatus(int curr) {
         descript = (TextView) findViewById(R.id.description);
         if (curr == FLEX)
             descript.setText("Flexion: " + flexLev);
@@ -150,8 +151,16 @@ public class Daily extends AppCompatActivity {
             descript.setText("Extension: " + extenLev);
         if (curr == SPD)
             descript.setText("Speed:" + spdLev);
+
+        updateMotor();
+    }
+    //TODO make it so updates data with correct values
+    private void updateMotor(){
+        Log.i(TAG,motorControl.setValue(commandDat)+"");
     }
 
+
+    //TODO Potentialy take out listening thread
     void thread(){
         final Handler handler = new Handler();
         stopThread = false;

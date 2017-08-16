@@ -7,8 +7,10 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
@@ -17,11 +19,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
+import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -35,25 +40,27 @@ import java.util.UUID;
  */
 
 public class BluetoothConnect extends AppCompatActivity {
-    BluetoothManager btManager;
-    BluetoothAdapter btAdapter;
-    BluetoothLeScanner btScanner;
+    private int mConnectionState = STATE_DISCONNECTED;
+    public static BluetoothManager btManager;
+    public static BluetoothAdapter btAdapter;
+    public static BluetoothLeScanner btScanner;
     Button startScanningButton;
     Button stopScanningButton;
+    static final String TAG = "test";
     TextView peripheralTextView, testText;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
-    private BluetoothDevice hero;
+    public static BluetoothDevice hero;
     public static BluetoothGatt heroGatt;
     public final String HERO_MAC = "E3:8E:E4:56:FF:4F";
+    private static final int STATE_DISCONNECTED = 0;
+    private static final int STATE_CONNECTING = 1;
+    private static final int STATE_CONNECTED = 2;
     //UUID here are for the different services/characterisits
-    public static final UUID RBL_SERVICE_UUID = UUID.fromString("713d0000-503e-4c75-ba94-3148f18d941e");
+    public static final UUID RBL_SERVICE_UUID = UUID.fromString("713D0000-503e-4C75-BA94-3148F18D941E");
     public static final UUID RBL_CHAR_TX_UUID = UUID.fromString("713d0002-503e-4c75-ba94-3148f18d941e");
     public static final UUID RBL_CHAR_RX_UUID = UUID.fromString("713d0003-503e-4c75-ba94-3148f18d941e");
     public static final UUID RBL_TX_UUID_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
-    //TODO ADD CODE TO CALLBACK LATER
-    //TODO REMINDER THAT GATT CONNECTION IS MAINTED ACROSS ACTIVITIES
-    private final BluetoothGattCallback heroGattCallBack = new BluetoothGattCallback() {
-    };
+    public static BluetoothGattCharacteristic motorControl;
 
 
     @Override
@@ -78,7 +85,12 @@ public class BluetoothConnect extends AppCompatActivity {
             }
         });
         stopScanningButton.setVisibility(View.INVISIBLE);
-
+        Button testConnect = (Button) findViewById(R.id.test_connect);
+        testConnect.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v){
+                testConnect();
+            }
+        });
         btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         btAdapter = btManager.getAdapter();
         btScanner = btAdapter.getBluetoothLeScanner();
@@ -140,8 +152,48 @@ public class BluetoothConnect extends AppCompatActivity {
         alert.show();
     }
 
+    //TODO ADD CODE TO CALLBACK LATER
+    private final BluetoothGattCallback heroGattCallBack = new BluetoothGattCallback() {
+        @Override
+        public void onConnectionStateChange(BluetoothGatt gatt, int status,
+                                            int newState) {
+            String intentAction;
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
+                mConnectionState = STATE_CONNECTED;
+                Log.i(TAG, "Connected to GATT server.");
+                Log.i(TAG, "Attempting to start service discovery:" +
+                        heroGatt.discoverServices());
+
+            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                mConnectionState = STATE_DISCONNECTED;
+                Log.i(TAG, "Disconnected from GATT server.");
+            }
+        }
+
+        @Override
+        // New services discovered
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            Log.e("BluetoothLeService", "onServicesDiscovered()");
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+
+
+                List<BluetoothGattService> gattServices = heroGatt.getServices();
+                Log.e("onServicesDiscovered", "Services count: " + gattServices.size());
+
+                for (BluetoothGattService gattService : gattServices) {
+                    String serviceUUID = gattService.getUuid().toString();
+                    Log.e("onServicesDiscovered", "Service uuid " + serviceUUID);
+                }
+                motorControl = heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_TX_UUID);
+            } else {
+            }
+        }
+
+    };
+
     // Device scan callback.
     //TODO conisder making a different way to display devices so just not list of them
+    //TODO FIX GLITCH WHERE DEVICES CONTINUE TO BE DISOCVERED AFTER SELECTED
     private ScanCallback leScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
@@ -158,7 +210,7 @@ public class BluetoothConnect extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Found HERO", Toast.LENGTH_SHORT).show();
                 heroGatt = result.getDevice().connectGatt(getApplicationContext(), false, heroGattCallBack);
                 connectGatt();
-
+                stopScanning();
             }
         }
 
@@ -215,13 +267,22 @@ public class BluetoothConnect extends AppCompatActivity {
             }
         });
     }
-    //TODO AM ABLE TO CONNECT TO THE GATT SERVER AND CREATE A WRITER, BUT NEED TO MAKE THE DATA DO SOMETHING
     public void connectGatt(){
         heroGatt.connect();
-        heroGatt.discoverServices();
-        heroGatt.executeReliableWrite();
-
+    }
+    //checks to see if it is possible to send data|-used only for testing
+    public void testConnect(){
+        byte [] dat = {0x03,
+                0x01, 0x03};
+        Log.i(TAG,heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_TX_UUID).setValue(dat) +"");
+        Log.i(TAG, heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_TX_UUID).getPermissions() + "");
     }
 
 
 }
+
+/*
+for (BluetoothGattService gattService : heroGatt.getServices()) {
+            Log.i(TAG, "Service UUID Found: " + gattService.getUuid().toString());
+        }
+ */
