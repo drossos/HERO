@@ -33,8 +33,10 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+
 
 /**
  * Created by Daniel on 7/31/2017.
@@ -64,6 +66,7 @@ public class BluetoothConnect extends AppCompatActivity {
     public static final UUID RBL_TX_UUID_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
     public static BluetoothGattCharacteristic motorControl;
     public static boolean connected;
+    int test = 1;
 
 
     @Override
@@ -193,7 +196,22 @@ public class BluetoothConnect extends AppCompatActivity {
                 }
                 motorControl = heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_TX_UUID);
             } else {
+                Log.e("BluetoothLeService", "No BluetoothLe discovered");
             }
+        }
+
+        @Override
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+
+            Log.i(TAG, "Attempting to execute write ");
+            if(status != BluetoothGatt.GATT_SUCCESS){
+                Log.i("onCharacteristicWrite", "Failed write, retrying");
+                gatt.writeCharacteristic(characteristic);
+            }
+            Log.i("onCharacteristicWrite","Write Success");
+            super.onCharacteristicWrite(gatt, characteristic, status);
+
+
         }
 
     };
@@ -280,10 +298,38 @@ public class BluetoothConnect extends AppCompatActivity {
     }
     //checks to see if it is possible to send data|-used only for testing
     public void testConnect(){
-        byte [] dat = {0x03,
-                0x01, 0x03};
-        Log.i(TAG,heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_TX_UUID).setValue(dat) +"");
-        Log.i(TAG, heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_TX_UUID).getPermissions() + "");
+        //test data to make fist
+        byte [] dat = {(byte)0x03,
+                (byte)0x03, (byte)0x02};
+        byte [] close = {(byte)0x03,
+                (byte)0x03, (byte)0x01};
+        heroGatt.readCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_TX_UUID));
+
+        pause();
+        //Log.i(TAG,heroGatt.beginReliableWrite()+"");
+       // Log.i(TAG, motorControl.getWriteType()+"");
+       // motorControl.setWriteType(motorControl.WRITE_TYPE_NO_RESPONSE);
+       // Log.i(TAG,motorControl.getWriteType() +"");
+        // Log.i(TAG, motorControl.getValue()+ "");
+        if (test == 1) {
+            Log.i(TAG, heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID).setValue(dat) + "");
+            test = 0;
+        } else {
+            Log.i(TAG, heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID).setValue(close) + "");
+            test = 1;
+        }
+
+        pause();
+        // Log.i(TAG, heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID).getPermissions() + "");
+        Log.i(TAG,heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attemp at writing Characteristic" );
+    }
+
+    public void pause(){
+        try{
+            Thread.sleep(1000);
+        }catch(InterruptedException e){
+            System.out.println("got interrupted!");
+        }
     }
 
 

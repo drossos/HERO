@@ -24,6 +24,7 @@ import static com.tri.airr.hero.BluetoothConnect.RBL_CHAR_TX_UUID;
 import static com.tri.airr.hero.BluetoothConnect.RBL_SERVICE_UUID;
 import static com.tri.airr.hero.BluetoothConnect.TAG;
 import static com.tri.airr.hero.BluetoothConnect.connected;
+import static com.tri.airr.hero.BluetoothConnect.hero;
 import static com.tri.airr.hero.BluetoothConnect.heroGatt;
 import static com.tri.airr.hero.BluetoothConnect.motorControl;
 
@@ -161,7 +162,12 @@ public class Daily extends AppCompatActivity {
     }
     //TODO make it so updates data with correct values
     private void updateMotor(){
-        Log.i(TAG,motorControl.setValue(commandDat)+"");
+        heroGatt.beginReliableWrite();
+        motorControl.setValue(commandDat);
+        heroGatt.writeCharacteristic(motorControl);
+
+        //Log.i(TAG,checkSet+"");
+        //Log.i(TAG,checkWrite+"");
     }
 
 
