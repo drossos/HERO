@@ -8,10 +8,14 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
 
+import static com.tri.airr.hero.BluetoothConnect.connected;
+
 /**
  * Created by drossos on 7/26/2017.
  */
 public class Stretch extends AppCompatActivity {
+    BluetoothConnect bleMethods = new BluetoothConnect();
+    CommandBytes dataPresets = new CommandBytes();
     boolean on = false;
     private final int HOLD = 1;
     private final int EXTEN = 2;
@@ -52,6 +56,8 @@ public class Stretch extends AppCompatActivity {
                     on = false;
                     onOff.setBackgroundColor(Color.RED);
                     onOff.setText("OFF");
+                    if (connected)
+                        bleMethods.writeToHero(dataPresets.turnOff);
                 } else {
                     on = true;
                     onOff.setBackgroundColor(Color.GREEN);

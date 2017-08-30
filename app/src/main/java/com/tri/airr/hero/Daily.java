@@ -72,28 +72,32 @@ public class Daily extends AppCompatActivity {
         descript = (TextView) findViewById(R.id.description);
         up = (Button) findViewById(R.id.up);
         down = (Button) findViewById(R.id.down);
-        if (connected)
-            bleMethods.writeToHero(dataPresets.turnOn);
+
 
 
     }
     //on and off button
+    //TODO bug where if motor is off then select arrow the motor will not turn back on
         public void onOffSelect(View v) {
-                if (on) {
-                    on = false;
-                    onOff.setBackgroundColor(Color.RED);
-                    onOff.setText("OFF");
+            if (on) {
+                on = false;
+                onOff.setBackgroundColor(Color.RED);
+                onOff.setText("OFF");
+                if (connected) {
+                    bleMethods.writeToHero(dataPresets.turnOff);
+                    //bleMethods.writeToHero(dataPresets.auto);
+                }
 
-                } else {
-                    on = true;
-                    onOff.setBackgroundColor(Color.GREEN);
-                    onOff.setText("ON");
+            } else {
+                on = true;
+                onOff.setBackgroundColor(Color.GREEN);
+                onOff.setText("ON");
+                if (connected) {
                     bleMethods.writeToHero(dataPresets.turnOn);
-                    if (connected)
-                        bleMethods.writeToHero(dataPresets.auto);
-
+                    bleMethods.writeToHero(dataPresets.auto);
                 }
             }
+        }
 
 
         public void flexSelect (View c){

@@ -11,6 +11,7 @@ public class CommandBytes {
      */
 
     public  byte[] turnOn = {0x01, 0x00, 0x01};
+    public  byte[] turnOff = {0x01, 0x00, 0x00};
     public  byte[] maxFlexion = {0x03, 0x03, 0x02};
     public  byte [] maxExtension = {0x03,0x03, 0x01};
     public byte[] auto = {(byte)0x03, (byte)0x04, (byte)0x02};

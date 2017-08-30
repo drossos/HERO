@@ -55,7 +55,7 @@
         android:layout_width="@dimen/daily_choice_width"
         android:layout_height="@dimen/daily_choice_height"
         android:gravity="center"
-        android:text="@string/speed_title"
+        android:text="@string/reps_title"
         android:layout_below="@+id/extension"
         android:layout_alignLeft="@+id/extension"
         android:layout_alignStart="@+id/extension"
