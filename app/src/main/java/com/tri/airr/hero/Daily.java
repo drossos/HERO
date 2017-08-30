@@ -29,7 +29,7 @@ import static com.tri.airr.hero.BluetoothConnect.heroGatt;
 import static com.tri.airr.hero.BluetoothConnect.motorControl;
 
 
-//TODO CHANGE IT SO METHODS ARE CALLED INSTEAD OF ONCLICK LISTENERS THAT WAY CAN KEEP THE WHOLE CODE IN A LISTENING AND RECEVING LOOP
+
 /**
  * Created by drossos on 7/26/2017.
  */
@@ -53,8 +53,7 @@ public class Daily extends AppCompatActivity {
     int extenLev = 0;
     int spdLev = 0;
     int curr = 0;
-    byte [] commandDat = {0x03,
-            0x04, 0x04};
+    byte [] commandDat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,8 +71,7 @@ public class Daily extends AppCompatActivity {
         up = (Button) findViewById(R.id.up);
         down = (Button) findViewById(R.id.down);
 
-        //array containg data to be sent to device
-        //TODO CHANGE FROM TEST
+
     }
     //on and off button
         public void onOffSelect(View v) {
@@ -81,10 +79,12 @@ public class Daily extends AppCompatActivity {
                     on = false;
                     onOff.setBackgroundColor(Color.RED);
                     onOff.setText("OFF");
+                    updateMotor();
                 } else {
                     on = true;
                     onOff.setBackgroundColor(Color.GREEN);
                     onOff.setText("ON");
+                    updateMotor();
                 }
             }
 
@@ -160,19 +160,13 @@ public class Daily extends AppCompatActivity {
         if (connected && optionSelected)
             updateMotor();
     }
-    //TODO make it so updates data with correct values
+    //TODO make it so updates data with correct values || make it only call static methods from within BluetoothConnect
     private void updateMotor(){
-        heroGatt.beginReliableWrite();
-        motorControl.setValue(commandDat);
-        heroGatt.writeCharacteristic(motorControl);
 
-        //Log.i(TAG,checkSet+"");
-        //Log.i(TAG,checkWrite+"");
     }
 
-
     //TODO Potentialy take out listening thread
-    void thread(){
+   /* void thread(){
         final Handler handler = new Handler();
         stopThread = false;
         buffer = new byte[1024];
@@ -187,7 +181,7 @@ public class Daily extends AppCompatActivity {
 
         thread.start();
     }
-
+*/
 
 
 }

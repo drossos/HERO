@@ -33,6 +33,10 @@ import android.widget.Toast;
 
 import java.util.UUID;
 
+/**
+ * Created by drossos on 7/26/2017.
+ */
+
 
 public class MainActivity extends AppCompatActivity {
 

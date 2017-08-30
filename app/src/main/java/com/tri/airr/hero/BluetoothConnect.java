@@ -39,7 +39,7 @@ import java.util.UUID;
 
 
 /**
- * Created by Daniel on 7/31/2017.
+ * Created by Daniel Rossos on 7/31/2017.
  */
 
 public class BluetoothConnect extends AppCompatActivity {
@@ -80,7 +80,11 @@ public class BluetoothConnect extends AppCompatActivity {
         startScanningButton = (Button) findViewById(R.id.StartScanButton);
         startScanningButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if (getApplicationContext().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED || !btAdapter.isEnabled()){
+                /*
+                Currently taken out GPS requierment, if later in development this changes add this code to conditional check of enabled services
+                getApplicationContext().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                 */
+                if (!btAdapter.isEnabled()){
                     peripheralTextView.setText("Make sure that GPS and Bluetooth services are enabeld");
                 } else {
                     startScanning();
@@ -109,7 +113,7 @@ public class BluetoothConnect extends AppCompatActivity {
         btCheck();
 
         // Make sure we have access coarse location enabled, if not, prompt the user to enable it
-        //TODO Figure out this gps request better, pretty sure first one does not work
+        //TODO Figure out this gps request better, pretty sure first one does not work , IF REQUIRED LATER IN DEVELOPMENT
         if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("This app needs location access");
@@ -162,7 +166,6 @@ public class BluetoothConnect extends AppCompatActivity {
         alert.show();
     }
 
-    //TODO ADD CODE TO CALLBACK LATER
     private final BluetoothGattCallback heroGattCallBack = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status,
@@ -180,8 +183,8 @@ public class BluetoothConnect extends AppCompatActivity {
             }
         }
 
-        @Override
         // New services discovered
+        @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             Log.e("BluetoothLeService", "onServicesDiscovered()");
             if (status == BluetoothGatt.GATT_SUCCESS) {
@@ -200,6 +203,7 @@ public class BluetoothConnect extends AppCompatActivity {
             }
         }
 
+        //Callback for when character write is "requested"
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
 
@@ -216,9 +220,9 @@ public class BluetoothConnect extends AppCompatActivity {
 
     };
 
-    // Device scan callback.
+    // Device scan callback, searches available devices and then displays and connects to HERO
     //TODO conisder making a different way to display devices so just not list of them
-    //TODO FIX GLITCH WHERE DEVICES CONTINUE TO BE DISOCVERED AFTER SELECTED
+    //TODO currently goes based off of MAC adress which changes with each different device, for more practical use make it connect via name or some other way
     private ScanCallback leScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
@@ -297,20 +301,17 @@ public class BluetoothConnect extends AppCompatActivity {
         connected = true;
     }
     //checks to see if it is possible to send data|-used only for testing
+    //TODO get rid of the test connect once advance development to across views control
     public void testConnect(){
+        //TODO make the bellow connect work with the static varriable
         //test data to make fist
         byte [] dat = {(byte)0x03,
                 (byte)0x03, (byte)0x02};
         byte [] close = {(byte)0x03,
                 (byte)0x03, (byte)0x01};
-        heroGatt.readCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_TX_UUID));
-
+       // heroGatt.readCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_TX_UUID));
         pause();
-        //Log.i(TAG,heroGatt.beginReliableWrite()+"");
-       // Log.i(TAG, motorControl.getWriteType()+"");
-       // motorControl.setWriteType(motorControl.WRITE_TYPE_NO_RESPONSE);
-       // Log.i(TAG,motorControl.getWriteType() +"");
-        // Log.i(TAG, motorControl.getValue()+ "");
+        //Characteristic is re written here on the app side
         if (test == 1) {
             Log.i(TAG, heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID).setValue(dat) + "");
             test = 0;
@@ -320,11 +321,12 @@ public class BluetoothConnect extends AppCompatActivity {
         }
 
         pause();
-        // Log.i(TAG, heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID).getPermissions() + "");
-        Log.i(TAG,heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attemp at writing Characteristic" );
+        //request is made for the rewritten characteristic from app to be pushed to the robot
+        //callback than handles that request
+        Log.i(TAG,heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
     }
 
-    public void pause(){
+    public static void pause(){
         try{
             Thread.sleep(1000);
         }catch(InterruptedException e){
@@ -332,11 +334,38 @@ public class BluetoothConnect extends AppCompatActivity {
         }
     }
 
+    //For across view data write call method
+    //TODO test to see if static method works from other views
+    public static void writeToHero(byte[] dat){
+        pause();
+        //Characteristic is re written here on the app side
+
+        Log.i(TAG, heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID).setValue(dat) + "");
+        pause();
+        //request is made for the rewritten characteristic from app to be pushed to the robot
+        //callback than handles that request
+        Log.i(TAG,heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
+    }
+
+
+
+    /* Test code for check connection
+     pause();
+        //Characteristic is re written here on the app side
+        if (test == 1) {
+            Log.i(TAG, heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID).setValue(dat) + "");
+            test = 0;
+        } else {
+            Log.i(TAG, heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID).setValue(close) + "");
+            test = 1;
+        }
+
+        pause();
+        //request is made for the rewritten characteristic from app to be pushed to the robot
+        //callback than handles that request
+        Log.i(TAG,heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
+     */
+
 
 }
 
-/*
-for (BluetoothGattService gattService : heroGatt.getServices()) {
-            Log.i(TAG, "Service UUID Found: " + gattService.getUuid().toString());
-        }
- */
