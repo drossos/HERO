@@ -13,13 +13,12 @@ import android.widget.Button;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
 import java.util.stream.*;
-
 import static com.tri.airr.hero.BluetoothConnect.RBL_CHAR_TX_UUID;
 import static com.tri.airr.hero.BluetoothConnect.RBL_SERVICE_UUID;
 import static com.tri.airr.hero.BluetoothConnect.TAG;
@@ -33,7 +32,10 @@ import static com.tri.airr.hero.BluetoothConnect.motorControl;
 /**
  * Created by drossos on 7/26/2017.
  */
+
 public class Daily extends AppCompatActivity {
+    BluetoothConnect bleMethods = new BluetoothConnect();
+    CommandBytes dataPresets = new CommandBytes();
     boolean on = false;
     private final int FLEX = 1;
     private final int EXTEN = 2;
@@ -53,11 +55,11 @@ public class Daily extends AppCompatActivity {
     int extenLev = 0;
     int spdLev = 0;
     int curr = 0;
-    byte [] commandDat;
+    byte [] commandDat =dataPresets.autoThreshhold;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
 
         //Var that shows which is current option selected
         super.onCreate(savedInstanceState);
@@ -70,6 +72,8 @@ public class Daily extends AppCompatActivity {
         descript = (TextView) findViewById(R.id.description);
         up = (Button) findViewById(R.id.up);
         down = (Button) findViewById(R.id.down);
+        if (connected)
+            bleMethods.writeToHero(dataPresets.turnOn);
 
 
     }
@@ -79,12 +83,15 @@ public class Daily extends AppCompatActivity {
                     on = false;
                     onOff.setBackgroundColor(Color.RED);
                     onOff.setText("OFF");
-                    updateMotor();
+
                 } else {
                     on = true;
                     onOff.setBackgroundColor(Color.GREEN);
                     onOff.setText("ON");
-                    updateMotor();
+                    bleMethods.writeToHero(dataPresets.turnOn);
+                    if (connected)
+                        bleMethods.writeToHero(dataPresets.auto);
+
                 }
             }
 
@@ -124,8 +131,13 @@ public class Daily extends AppCompatActivity {
         public void upSelect(View v){
                 if (curr == FLEX) {
                     flexLev++;
-                } else if (curr == EXTEN)
+                    commandDat[2] = (byte)(commandDat[2] + 15);
+                    bleMethods.writeToHero(commandDat);
+                } else if (curr == EXTEN) {
                     extenLev++;
+                    commandDat[1] = (byte)(commandDat[1] + 1);
+                    bleMethods.writeToHero(commandDat);
+                }
                 else if (curr == SPD) {
                     spdLev++;
                 } else {
@@ -135,10 +147,16 @@ public class Daily extends AppCompatActivity {
             }
 
        public void downSelect(View v){
-                if (curr == FLEX && flexLev != 0)
+                if (curr == FLEX && flexLev != 0) {
                     flexLev--;
-                else if (curr == EXTEN && extenLev != 0)
+                    commandDat[2] = (byte)(commandDat[2]-15);
+                    bleMethods.writeToHero(commandDat);
+                }
+                else if (curr == EXTEN && extenLev != 0) {
                     extenLev--;
+                    commandDat[1] = (byte)(commandDat[1] - 1);
+                    bleMethods.writeToHero(commandDat);
+                }
                 else if (curr == SPD && spdLev != 0) {
                     spdLev--;
                 } else {
@@ -151,10 +169,12 @@ public class Daily extends AppCompatActivity {
 
     public void updateStatus(int curr) {
         descript = (TextView) findViewById(R.id.description);
-        if (curr == FLEX)
+        if (curr == FLEX) {
             descript.setText("Flexion: " + flexLev);
-        if (curr == EXTEN)
+        }
+        if (curr == EXTEN) {
             descript.setText("Extension: " + extenLev);
+        }
         if (curr == SPD)
             descript.setText("Speed:" + spdLev);
         if (connected && optionSelected)
