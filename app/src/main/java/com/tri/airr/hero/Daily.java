@@ -37,7 +37,7 @@ public class Daily extends AppCompatActivity {
     BluetoothConnect bleMethods = new BluetoothConnect();
     CommandBytes dataPresets = new CommandBytes();
     boolean on = false;
-    private final int FLEX = 3;
+    private final int FLEX = 1;
     private final int EXTEN = 2;
     private final int SPD = 3;
     private Button onOff;
