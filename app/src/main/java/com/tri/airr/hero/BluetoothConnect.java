@@ -239,6 +239,23 @@ public class BluetoothConnect extends AppCompatActivity {
 
         }
 
+        @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+
+            Log.i(TAG, "in da callback");
+            byte[] charValue = heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID).getValue();
+//        for (byte i : charValue)
+            Log.i(TAG,""+ charValue);
+
+
+//            byte[] charValue = characteristic.getValue();
+//
+//            for (byte i : charValue)
+//                Log.i(TAG,i + "");
+
+
+        }
+
     };
 
     // Device scan callback, searches available devices and then displays and connects to HERO
@@ -349,6 +366,7 @@ public class BluetoothConnect extends AppCompatActivity {
         //request is made for the rewritten characteristic from app to be pushed to the robot
         //callback than handles that request
         Log.i(TAG,heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
+
     }
 
     public static void pause(){
@@ -371,6 +389,17 @@ public class BluetoothConnect extends AppCompatActivity {
         //callback then handles that request
         Log.i(TAG,heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
         logBytesSent(dat);
+    }
+
+    public void readFromHero(){
+        pause();
+        //Characteristic is re written here on the app side
+        //request is made for the rewritten characteristic from app to be pushed to the robot
+        //callback then handles that request
+        Log.i(TAG,heroGatt.readCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
+        pause();
+        Log.i(TAG, "Attempting to execute read ");
+
     }
 
     private void logBytesSent(byte[] dat){

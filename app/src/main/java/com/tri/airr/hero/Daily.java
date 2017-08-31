@@ -94,6 +94,7 @@ public class Daily extends AppCompatActivity {
                 onOff.setBackgroundColor(Color.RED);
                 onOff.setText("OFF");
                 if (connected) {
+                    bleMethods.readFromHero();
                     bleMethods.writeToHero(dataPresets.turnOff);
                     //bleMethods.writeToHero(dataPresets.auto);
                 }
@@ -144,6 +145,7 @@ public class Daily extends AppCompatActivity {
         //Controls the different aspcets of the motor with the up and down arrows
         public void upSelect(View v){
                 if (curr == FLEX) {
+                    bleMethods.readFromHero();
                     flexLev++;
                     commandDat[2] = (byte)(commandDat[2] + 15);
                     bleMethods.writeToHero(commandDat);
