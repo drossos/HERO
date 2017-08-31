@@ -83,18 +83,6 @@ public class BluetoothConnect extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.bt_connect);
 
-        File root = new File(DIRECTORY_PATH);
-        File gpxfile = new File(root, "samples.txt");
-        try {
-            FileWriter writer = new FileWriter(gpxfile);
-            writer.append("First string is here to be written.");
-            writer.flush();
-            writer.close();
-            Log.i(TAG, "test works");
-        } catch (IOException e){
-            Log.e(TAG, "didnt work");
-        }
-
         peripheralTextView = (TextView) findViewById(R.id.PeripheralTextView);
         peripheralTextView.setMovementMethod(new ScrollingMovementMethod());
         testText = (TextView) findViewById(R.id.test_area);
