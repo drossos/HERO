@@ -23,6 +23,7 @@ import android.location.LocationManager;
 import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -38,6 +39,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.List;
 import java.util.UUID;
@@ -72,7 +74,8 @@ public class BluetoothConnect extends AppCompatActivity {
     public static BluetoothGattCharacteristic motorControl;
     public static boolean connected;
     int test = 1;
-    private static OutputStreamWriter fw;
+    private static FileWriter fw;
+    private final String DIRECTORY_PATH = Environment.getExternalStorageDirectory().toString();
 
 
     @Override
@@ -80,12 +83,16 @@ public class BluetoothConnect extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.bt_connect);
 
-        try{
-            fw = new FileWriter(new File("BytesSent.txt"));
-            fw.write("test");
+        File root = new File(DIRECTORY_PATH);
+        File gpxfile = new File(root, "samples.txt");
+        try {
+            FileWriter writer = new FileWriter(gpxfile);
+            writer.append("First string is here to be written.");
+            writer.flush();
+            writer.close();
+            Log.i(TAG, "test works");
         } catch (IOException e){
-            Log.e(TAG, ".txt not found ");
-            e.printStackTrace();
+            Log.e(TAG, "didnt work");
         }
 
         peripheralTextView = (TextView) findViewById(R.id.PeripheralTextView);
