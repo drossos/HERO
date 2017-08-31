@@ -34,6 +34,9 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -41,6 +44,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -74,8 +78,8 @@ public class BluetoothConnect extends AppCompatActivity {
     public static BluetoothGattCharacteristic motorControl;
     public static boolean connected;
     int test = 1;
-    private static FileWriter fw;
-    private final String DIRECTORY_PATH = Environment.getExternalStorageDirectory().toString();
+    private int bytesChange = 1;
+
 
 
     @Override
@@ -94,7 +98,7 @@ public class BluetoothConnect extends AppCompatActivity {
                 getApplicationContext().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
                  */
                 if (!btAdapter.isEnabled()){
-                    peripheralTextView.setText("Make sure that Bluetooth services are enabeld");
+                    peripheralTextView.setText("Make sure that Bluetooth and GPS services are enabeld");
                 } else {
                     startScanning();
                 }
@@ -369,30 +373,14 @@ public class BluetoothConnect extends AppCompatActivity {
         logBytesSent(dat);
     }
 
-    private static void logBytesSent(byte[] dat){
+    private void logBytesSent(byte[] dat){
+        Daily methods =  new Daily();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference(bytesChange + "");
+        List<String> nameList = Arrays.asList(methods.byteToString(dat));
+        myRef.setValue(nameList);
+        bytesChange++;
 
-        try{
-            fw = new FileWriter(new File("BytesSent.txt"));
-        } catch (IOException e){
-            Log.e(TAG, ".txt not found ");
-            e.printStackTrace();
-        }
-
-        for (int i  = 0; i < dat.length;i++){
-            try{
-                fw.write((byte)dat[i] + "/n");
-            } catch (IOException e){
-                Log.e(TAG, ".unable to write bytes");
-                e.printStackTrace();
-            }
-        }
-
-        try{
-            fw.write("/n");
-        } catch (IOException e){
-            Log.e(TAG, ".unable to write bytes");
-            e.printStackTrace();
-        }
     }
 
 

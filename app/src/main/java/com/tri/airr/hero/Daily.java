@@ -14,12 +14,17 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
 import java.util.stream.*;
@@ -70,11 +75,6 @@ public class Daily extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.daily_section);
         //initalizing all buttons and interactive elements
-        byte [] dat = {(byte)0x03,
-                (byte)0x03, (byte)0x02};
-        mStorageRef = FirebaseStorage.getInstance().getReference();
-        mStorageRef.putBytes(dat);
-
         onOff = (Button) findViewById(R.id.onOff);
         flexion = (Button) findViewById(R.id.flexion);
         extension = (Button) findViewById(R.id.extension);
@@ -217,7 +217,14 @@ public class Daily extends AppCompatActivity {
     }
 */
 
-
+    public String[] byteToString (byte[] dat){
+        String[] B = new String[dat.length];
+        for (int i = 0; i < dat.length; i++)
+        {
+            B[i] = (byte)dat[i]+"";
+        }
+        return B;
+    }
 }
 
 
