@@ -33,7 +33,12 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.List;
 import java.util.UUID;
 
@@ -67,12 +72,21 @@ public class BluetoothConnect extends AppCompatActivity {
     public static BluetoothGattCharacteristic motorControl;
     public static boolean connected;
     int test = 1;
+    private static OutputStreamWriter fw;
 
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.bt_connect);
+
+        try{
+            fw = new FileWriter(new File("BytesSent.txt"));
+            fw.write("test");
+        } catch (IOException e){
+            Log.e(TAG, ".txt not found ");
+            e.printStackTrace();
+        }
 
         peripheralTextView = (TextView) findViewById(R.id.PeripheralTextView);
         peripheralTextView.setMovementMethod(new ScrollingMovementMethod());
@@ -135,6 +149,10 @@ public class BluetoothConnect extends AppCompatActivity {
         if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
             buildAlertMessageNoGps();
         }
+
+
+
+
 
 
     }
@@ -353,7 +371,35 @@ public class BluetoothConnect extends AppCompatActivity {
         //request is made for the rewritten characteristic from app to be pushed to the robot
         //callback then handles that request
         Log.i(TAG,heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
+        logBytesSent(dat);
     }
+
+    private static void logBytesSent(byte[] dat){
+
+        try{
+            fw = new FileWriter(new File("BytesSent.txt"));
+        } catch (IOException e){
+            Log.e(TAG, ".txt not found ");
+            e.printStackTrace();
+        }
+
+        for (int i  = 0; i < dat.length;i++){
+            try{
+                fw.write((byte)dat[i] + "/n");
+            } catch (IOException e){
+                Log.e(TAG, ".unable to write bytes");
+                e.printStackTrace();
+            }
+        }
+
+        try{
+            fw.write("/n");
+        } catch (IOException e){
+            Log.e(TAG, ".unable to write bytes");
+            e.printStackTrace();
+        }
+    }
+
 
 
 

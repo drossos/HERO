@@ -11,4 +11,5 @@
     <string name="exten_title">Extension</string>
     <string name="hold_title">Hold Time</string>
     <string name="email_title">Talk to Physician</string>
+    <string name="speed_title">Speed</string>
 </resources>
