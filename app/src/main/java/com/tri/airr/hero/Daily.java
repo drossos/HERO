@@ -148,11 +148,13 @@ public class Daily extends AppCompatActivity {
                     bleMethods.readFromHero();
                     flexLev++;
                     commandDat[2] = (byte)(commandDat[2] + 15);
-                    bleMethods.writeToHero(commandDat);
+                    if (connected)
+                        bleMethods.writeToHero(commandDat);
                 } else if (curr == EXTEN) {
                     extenLev++;
                     commandDat[1] = (byte)(commandDat[1] + 1);
-                    bleMethods.writeToHero(commandDat);
+                    if(connected)
+                        bleMethods.writeToHero(commandDat);
                 }
                 else if (curr == SPD) {
                     spdLev++;
