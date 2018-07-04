@@ -9,6 +9,11 @@
         android:layout_height="wrap_content"
         android:text="Hello Bluetooth Scanners!"
         android:id = "@+id/test_area"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/battery_message"
+        android:id="@+id/battery_display"/>
 
     <Button
         android:layout_width="100dp"

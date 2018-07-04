@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
@@ -25,6 +26,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
@@ -61,12 +63,13 @@ public class BluetoothConnect extends AppCompatActivity {
     Button startScanningButton;
     Button stopScanningButton;
     static final String TAG = "test";
-    TextView peripheralTextView, testText;
+    TextView peripheralTextView, testText, batteryDisplay;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
     public static BluetoothDevice hero;
     public static BluetoothGatt heroGatt;
+    public static int battery;
     //TODO FIND BETTER WAY THAT ALLOWS FOR NON HARDCODED ADRESS
-    public final String HERO_MAC = "D1:85:3B:0F:02:AF";//"E3:8E:E4:56:FF:4F";
+    public final String HERO_MAC = "84:68:3E:06:CF:36";//"E3:8E:E4:56:FF:4F";
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
@@ -74,7 +77,10 @@ public class BluetoothConnect extends AppCompatActivity {
     public static final UUID RBL_SERVICE_UUID = UUID.fromString("713D0000-503e-4C75-BA94-3148F18D941E");
     public static final UUID RBL_CHAR_TX_UUID = UUID.fromString("713d0002-503e-4c75-ba94-3148f18d941e");
     public static final UUID RBL_CHAR_RX_UUID = UUID.fromString("713d0003-503e-4c75-ba94-3148f18d941e");
+
     public static final UUID RBL_TX_UUID_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+    public static final UUID TINY_TILE_TEST_SERVICE = UUID.fromString("0000180f-0000-1000-8000-00805f9b34fb");
+    public static final UUID TINY_TILE_TEST_CHAR = UUID.fromString("00002A19-0000-1000-8000-00805F9B34FB");
     public static BluetoothGattCharacteristic motorControl;
     public static boolean connected;
     int test = 1;
@@ -88,6 +94,7 @@ public class BluetoothConnect extends AppCompatActivity {
         setContentView(R.layout.bt_connect);
 
         peripheralTextView = (TextView) findViewById(R.id.PeripheralTextView);
+        batteryDisplay = (TextView) findViewById(R.id.battery_display);
         peripheralTextView.setMovementMethod(new ScrollingMovementMethod());
         testText = (TextView) findViewById(R.id.test_area);
         startScanningButton = (Button) findViewById(R.id.StartScanButton);
@@ -214,11 +221,11 @@ public class BluetoothConnect extends AppCompatActivity {
                 List<BluetoothGattService> gattServices = heroGatt.getServices();
                 Log.e("onServicesDiscovered", "Services count: " + gattServices.size());
 
-                for (BluetoothGattService gattService : gattServices) {
+               for (BluetoothGattService gattService : gattServices) {
                     String serviceUUID = gattService.getUuid().toString();
                     Log.e("onServicesDiscovered", "Service uuid " + serviceUUID);
                 }
-                motorControl = heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_TX_UUID);
+                //motorControl = heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_TX_UUID);
             } else {
                 Log.e("BluetoothLeService", "No BluetoothLe discovered");
             }
@@ -243,20 +250,45 @@ public class BluetoothConnect extends AppCompatActivity {
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
 
             Log.i(TAG, "in da callback");
-            byte[] charValue = heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID).getValue();
-//        for (byte i : charValue)
-            Log.i(TAG,""+ charValue);
+            int characValue = heroGatt.getService(TINY_TILE_TEST_SERVICE).getCharacteristic(TINY_TILE_TEST_CHAR).getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
 
+//        for (byte i : charValue)
+            Log.i(TAG,""+ ("HERO Battery Level: %"+characValue));
+            battery = characValue;
+
+            /*This all to allow for a active update on HERO battery*/
+            //get descriptor and allow for notification
+            UUID uuid = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(uuid);
+            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            heroGatt.writeDescriptor(descriptor);
+
+            //subscribe for notifications from the characteristic
+            heroGatt.setCharacteristicNotification(heroGatt.getService(TINY_TILE_TEST_SERVICE).getCharacteristic(TINY_TILE_TEST_CHAR),true);
 
 //            byte[] charValue = characteristic.getValue();
 //
 //            for (byte i : charValue)
 //                Log.i(TAG,i + "");
-
-
         }
 
+        @Override
+        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            super.onCharacteristicChanged(gatt, characteristic);
+
+            int characValue = heroGatt.getService(TINY_TILE_TEST_SERVICE).getCharacteristic(TINY_TILE_TEST_CHAR).getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
+            Log.i(TAG,"InOnChange"+ ("HERO Battery Level: %"+characValue));
+            battery = characValue;
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    batteryDisplay.setText("HERO battery:"+battery);
+                }
+            });
+        }
     };
+
 
     // Device scan callback, searches available devices and then displays and connects to HERO
     //TODO conisder making a different way to display devices so just not list of them
@@ -272,7 +304,7 @@ public class BluetoothConnect extends AppCompatActivity {
             // if there is no need to scroll, scrollAmount will be <=0
             if (scrollAmount > 0)
                 peripheralTextView.scrollTo(0, scrollAmount);
-            if(result.getDevice().getAddress().equals(HERO_MAC)) {
+            if(result.getDevice().getName() != null && result.getDevice().getName().equals("LegoHERO")) {
                 hero = result.getDevice();
                 Toast.makeText(getApplicationContext(), "Found HERO", Toast.LENGTH_SHORT).show();
                 heroGatt = result.getDevice().connectGatt(getApplicationContext(), false, heroGattCallBack);
@@ -341,37 +373,24 @@ public class BluetoothConnect extends AppCompatActivity {
     //checks to see if it is possible to send data|-used only for testing
     //TODO get rid of the test connect once advance development to across views control
     public void testConnect(){
-        //TODO make the bellow connect work with the static varriable
-        //test data to make fist
-        byte [] dat = {(byte)0x03,
-                (byte)0x03, (byte)0x02};
-        byte [] close = {(byte)0x03,
-                (byte)0x03, (byte)0x01};
-        byte[] turnOn = {0x01, 0x00, 0x01};
-        heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID).setValue(turnOn);
-        pause();
-        heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID));
-       // heroGatt.readCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_TX_UUID));
-        pause();
-        //Characteristic is re written here on the app side
-        if (test == 1) {
-            Log.i(TAG, heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID).setValue(dat) + "");
-            test = 0;
-        } else {
-            Log.i(TAG, heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID).setValue(close) + "");
-            test = 1;
-        }
-
-        pause();
-        //request is made for the rewritten characteristic from app to be pushed to the robot
-        //callback than handles that request
-        Log.i(TAG,heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
-
+        //Log.i(TAG,heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
+        Log.i(TAG, "Attempt to read BLEchar" + heroGatt.readCharacteristic(heroGatt.getService(TINY_TILE_TEST_SERVICE).getCharacteristic(TINY_TILE_TEST_CHAR)));
+        pause(100);
+        //batteryDisplay.setText("HERO battery:"+battery);
     }
+
 
     public static void pause(){
         try{
             Thread.sleep(10);
+        }catch(InterruptedException e){
+            System.out.println("got interrupted!");
+        }
+    }
+
+    public static void pause(int dur){
+        try{
+            Thread.sleep(dur);
         }catch(InterruptedException e){
             System.out.println("got interrupted!");
         }

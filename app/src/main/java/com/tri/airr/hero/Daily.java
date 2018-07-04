@@ -145,7 +145,8 @@ public class Daily extends AppCompatActivity {
         //Controls the different aspcets of the motor with the up and down arrows
         public void upSelect(View v){
                 if (curr == FLEX) {
-                    bleMethods.readFromHero();
+                    if (connected)
+                        bleMethods.readFromHero();
                     flexLev++;
                     commandDat[2] = (byte)(commandDat[2] + 15);
                     if (connected)
@@ -168,12 +169,14 @@ public class Daily extends AppCompatActivity {
                 if (curr == FLEX && flexLev != 0) {
                     flexLev--;
                     commandDat[2] = (byte)(commandDat[2]-15);
-                    bleMethods.writeToHero(commandDat);
+                    if (connected)
+                        bleMethods.writeToHero(commandDat);
                 }
                 else if (curr == EXTEN && extenLev != 0) {
                     extenLev--;
                     commandDat[1] = (byte)(commandDat[1] - 1);
-                    bleMethods.writeToHero(commandDat);
+                    if (connected)
+                        bleMethods.writeToHero(commandDat);
                 }
                 else if (curr == SPD && spdLev != 0) {
                     spdLev--;
