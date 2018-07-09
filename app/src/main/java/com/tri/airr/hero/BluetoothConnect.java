@@ -91,6 +91,7 @@ public class BluetoothConnect extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTheme(android.R.style.Widget_Holo);
         setContentView(R.layout.bt_connect);
 
         peripheralTextView = (TextView) findViewById(R.id.PeripheralTextView);

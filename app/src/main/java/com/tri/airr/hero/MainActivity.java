@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTheme(android.R.style.Widget_Holo);
         setContentView(R.layout.activity_main);
 
 
@@ -78,6 +79,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void connectBluetooth(View v) {
         Intent intent = new Intent(MainActivity.this, BluetoothConnect.class);
+        startActivity(intent);
+    }
+
+    public void goToRESTTest (View v) {
+        Intent intent = new Intent(MainActivity.this, RESTTest.class);
         startActivity(intent);
     }
 

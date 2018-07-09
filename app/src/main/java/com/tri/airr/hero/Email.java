@@ -24,6 +24,7 @@ public class Email extends AppCompatActivity {
     @Override
     protected void onCreate (Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        setTheme(android.R.style.Widget_Holo);
         setContentView(R.layout.email_screen);
 
         pattern = Pattern.compile(EMAIL_REGEX);

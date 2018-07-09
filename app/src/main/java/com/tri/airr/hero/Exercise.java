@@ -10,6 +10,7 @@ public class Exercise extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTheme(android.R.style.Widget_Holo);
         setContentView(R.layout.exercise_section);
     }
 

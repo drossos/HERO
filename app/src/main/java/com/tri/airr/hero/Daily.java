@@ -73,6 +73,7 @@ public class Daily extends AppCompatActivity {
 
         //Var that shows which is current option selected
         super.onCreate(savedInstanceState);
+        setTheme(android.R.style.Widget_Holo);
         setContentView(R.layout.daily_section);
         //initalizing all buttons and interactive elements
         onOff = (Button) findViewById(R.id.onOff);
