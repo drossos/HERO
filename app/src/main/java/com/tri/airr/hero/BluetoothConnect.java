@@ -19,14 +19,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.LocationManager;
-import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.SystemClock;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
@@ -54,6 +49,8 @@ import java.util.UUID;
 /**
  * Created by Daniel Rossos on 7/31/2017.
  */
+
+//TODO GOING ACROSS ACTIVITIES MESSES UP RECONNECTING TO BLUETOOTH SERVICES
 
 public class BluetoothConnect extends AppCompatActivity {
     private int mConnectionState = STATE_DISCONNECTED;
@@ -105,6 +102,10 @@ public class BluetoothConnect extends AppCompatActivity {
                 Currently taken out GPS requierment, if later in development this changes add this code to conditional check of enabled services
                 getApplicationContext().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
                  */
+                if (heroGatt != null) {
+                    heroGatt.disconnect();
+                    heroGatt.close();
+                }
                 if (!btAdapter.isEnabled()){
                     peripheralTextView.setText("Make sure that Bluetooth and GPS services are enabeld");
                 } else {
@@ -429,29 +430,6 @@ public class BluetoothConnect extends AppCompatActivity {
         List<String> nameList = Arrays.asList(methods.byteToString(dat));
         myRef.setValue(nameList);
         bytesChange++;
-
     }
-
-
-
-
-    /* Test code for check connection
-     pause();
-        //Characteristic is re written here on the app side
-        if (test == 1) {
-            Log.i(TAG, heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID).setValue(dat) + "");
-            test = 0;
-        } else {
-            Log.i(TAG, heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID).setValue(close) + "");
-            test = 1;
-        }
-
-        pause();
-        //request is made for the rewritten characteristic from app to be pushed to the robot
-        //callback than handles that request
-        Log.i(TAG,heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
-     */
-
-
 }
 

@@ -34,12 +34,10 @@ public class RESTTest extends AppCompatActivity {
         setContentView(R.layout.activity_resttest);
 
         Map<String, Object> test = new HashMap();
-        test.put("name", "test");
-        test.put("email", "cream");
-        Map<String, String> testPNums = new HashMap<>();
-        testPNums.put("work","3573577");
-        testPNums.put("mobile", "45545546");
-        test.put("phone", testPNums);
+        test.put("metric3", (Math.random()*100));
+        test.put("metric2", (Math.random()*100));
+        test.put("metric1", (Math.random()*100));
+        test.put("name", "AndroidPhone" + Math.random());
         JSONObject testJSon = new JSONObject(test);
 
        request = Volley.newRequestQueue(this);
@@ -51,11 +49,9 @@ public class RESTTest extends AppCompatActivity {
     //TODO SERVER SIDE FIX GET METHOD TO RETURN ENTIRE DB
     public void sendData(View view){
         Map<String, Object> test = new HashMap();
-        Map<String, String> testPNums = new HashMap<>();
-        testPNums.put("work","3573577");
-        testPNums.put("mobile", "45545546");
-        test.put("phone", testPNums);
-        test.put("email", "email@test.com");
+        test.put("metric3", (Math.random()*100));
+        test.put("metric2", (Math.random()*100));
+        test.put("metric1", (Math.random()*100));
         test.put("name", "AndroidPhone" + Math.random());
         JSONObject testJSon = new JSONObject(test);
 
