@@ -2,10 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.tri.airr.hero">
 
+    <uses-sdk
+        android:minSdkVersion="23"
+        android:targetSdkVersion="24" />
+
     <!-- Useful Link for Android Dev: https://developer.android.com/index.html -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-sdk android:minSdkVersion="23" android:targetSdkVersion="24" />
 
     <uses-feature
         android:name="android.hardware.bluetooth_le"
@@ -14,6 +17,14 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <uses-feature android:name="android.hardware.location.gps" />
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    
+
 
     <application
         android:allowBackup="true"
@@ -29,11 +40,13 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            android:screenOrientation="portrait"
         </activity>
         <activity
             android:name=".Daily"
             android:screenOrientation="portrait">
             android:name= ".Daily"
+            android:screenOrientation="portrait"
         </activity>
         <activity
             android:name=".Exercise"
@@ -44,24 +57,33 @@
             android:name=".Results"
             android:screenOrientation="portrait">
             android:name= ".Results"
+            android:screenOrientation="portrait"
         </activity>
         <activity
             android:name=".Stretch"
             android:screenOrientation="portrait">
             android:name= ".Stretch"
+            android:screenOrientation="portrait"
         </activity>
         <activity
             android:name=".Email"
             android:screenOrientation="portrait">
             android:name=".Email
+            android:screenOrientation="portrait"
         </activity>
         <activity
             android:name=".BluetoothConnect"
             android:screenOrientation="portrait">
             android:name=".BluetoothConnect
+            android:screenOrientation="portrait"
         </activity>
-        <activity android:name=".RESTMethods" />
-        <activity android:name=".RESTTest"></activity>
+        <activity android:name=".RESTMethods"
+            android:screenOrientation="portrait" />
+        <activity android:name=".RESTTest"
+            android:screenOrientation="portrait" />
+        <activity android:name=".VoiceControl"
+            android:screenOrientation="portrait">
+        </activity>
     </application>
 
 </manifest>

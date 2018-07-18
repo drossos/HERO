@@ -80,7 +80,8 @@
         android:layout_marginTop="15dp"
         android:id="@+id/bt_connect"
         />
-    <Button
+
+  <!--  <Button
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:text="Test Restful"
@@ -88,7 +89,16 @@
         android:onClick="goToRESTTest"
         android:layout_marginBottom="15dp"
         android:id="@+id/rest_test_connect"
-        />
+        />-->
+
+    <Button
+        android:id="@+id/voice_control_goto"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/scan"
+        android:layout_centerHorizontal="true"
+        android:onClick="goToVoiceControl"
+        android:text="Go To Voice Control" />
 
 
 

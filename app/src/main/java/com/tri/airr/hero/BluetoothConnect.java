@@ -1,6 +1,6 @@
 package com.tri.airr.hero;
 
-
+//TODO NOT IDEAL TO HAVE ALL BLUETOOTH METHODS WITHIN A ACTIVITY CLASS
 import android.Manifest;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -70,18 +70,34 @@ public class BluetoothConnect extends AppCompatActivity {
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
+
+    public static int extendMotor=50;//50 = fully squeeze bottle; 80 = partially squeeze bottle
+    public static int retractMotor=150;//150 = fully extend fingers; 120 = partially extend fingers
+
+    //NAME TO SEARCH FOR
+    public static final String HERO_NAME = "LegoHERO";
+    //hand states
+    public static final int MANUAL_EXTEND = 0;
+    public static final int MANUAL_CONTRACT = 1;
     //UUID here are for the different services/characterisits
     public static final UUID RBL_SERVICE_UUID = UUID.fromString("713D0000-503e-4C75-BA94-3148F18D941E");
     public static final UUID RBL_CHAR_TX_UUID = UUID.fromString("713d0002-503e-4c75-ba94-3148f18d941e");
     public static final UUID RBL_CHAR_RX_UUID = UUID.fromString("713d0003-503e-4c75-ba94-3148f18d941e");
 
     public static final UUID RBL_TX_UUID_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
-    public static final UUID TINY_TILE_TEST_SERVICE = UUID.fromString("0000180f-0000-1000-8000-00805f9b34fb");
-    public static final UUID TINY_TILE_TEST_CHAR = UUID.fromString("00002A19-0000-1000-8000-00805F9B34FB");
+    public static final UUID TINY_TILE_BATTERY_SERVICE = UUID.fromString("0000180f-0000-1000-8000-00805f9b34fb");
+    public static final UUID TINY_TILE_BATTERY_LEVEL_CHAR = UUID.fromString("00002A19-0000-1000-8000-00805F9B34FB");
+
+    public static final UUID TINY_TILE_MOTOR_SERVICE = UUID.fromString("ebbb19a6-c943-44f9-aee0-e180300007f0");
+    public static final UUID TINY_TILE_MOTOR_LEVEL_CHAR = UUID.fromString("00211321-dc03-4f55-82b6-14a630bd8e2d");
+    public static final UUID TINY_TILE_MOTOR_EXTEND_CHAR = UUID.fromString("809ba7a9-13ad-4446-a005-bdc12ca93c76");
+    public static final UUID TINY_TILE_MOTOR_CONTRACT_CHAR = UUID.fromString("2fad8a3f-e1a1-47cd-982b-24e13fbe9342");
+
     public static BluetoothGattCharacteristic motorControl;
     public static boolean connected;
     int test = 1;
     private int bytesChange = 1;
+    private static boolean toggle = false;
 
 
 
@@ -252,7 +268,7 @@ public class BluetoothConnect extends AppCompatActivity {
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
 
             Log.i(TAG, "in da callback");
-            int characValue = heroGatt.getService(TINY_TILE_TEST_SERVICE).getCharacteristic(TINY_TILE_TEST_CHAR).getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
+            int characValue = heroGatt.getService(TINY_TILE_BATTERY_SERVICE).getCharacteristic(TINY_TILE_BATTERY_LEVEL_CHAR).getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
 
 //        for (byte i : charValue)
             Log.i(TAG,""+ ("HERO Battery Level: %"+characValue));
@@ -266,7 +282,7 @@ public class BluetoothConnect extends AppCompatActivity {
             heroGatt.writeDescriptor(descriptor);
 
             //subscribe for notifications from the characteristic
-            heroGatt.setCharacteristicNotification(heroGatt.getService(TINY_TILE_TEST_SERVICE).getCharacteristic(TINY_TILE_TEST_CHAR),true);
+            heroGatt.setCharacteristicNotification(heroGatt.getService(TINY_TILE_BATTERY_SERVICE).getCharacteristic(TINY_TILE_BATTERY_LEVEL_CHAR),true);
 
 //            byte[] charValue = characteristic.getValue();
 //
@@ -278,9 +294,10 @@ public class BluetoothConnect extends AppCompatActivity {
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
 
-            int characValue = heroGatt.getService(TINY_TILE_TEST_SERVICE).getCharacteristic(TINY_TILE_TEST_CHAR).getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
-            Log.i(TAG,"InOnChange"+ ("HERO Battery Level: %"+characValue));
+            int characValue = heroGatt.getService(TINY_TILE_BATTERY_SERVICE).getCharacteristic(TINY_TILE_BATTERY_LEVEL_CHAR).getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
+            //Log.i(TAG,"InOnChange"+ ("HERO Battery Level: %"+characValue));
             battery = characValue;
+
 
             runOnUiThread(new Runnable() {
                 @Override
@@ -288,6 +305,8 @@ public class BluetoothConnect extends AppCompatActivity {
                     batteryDisplay.setText("HERO battery:"+battery);
                 }
             });
+
+
         }
     };
 
@@ -306,7 +325,7 @@ public class BluetoothConnect extends AppCompatActivity {
             // if there is no need to scroll, scrollAmount will be <=0
             if (scrollAmount > 0)
                 peripheralTextView.scrollTo(0, scrollAmount);
-            if(result.getDevice().getName() != null && result.getDevice().getName().equals("LegoHERO")) {
+            if(result.getDevice().getName() != null && result.getDevice().getName().equals(HERO_NAME)) {
                 hero = result.getDevice();
                 Toast.makeText(getApplicationContext(), "Found HERO", Toast.LENGTH_SHORT).show();
                 heroGatt = result.getDevice().connectGatt(getApplicationContext(), false, heroGattCallBack);
@@ -376,9 +395,43 @@ public class BluetoothConnect extends AppCompatActivity {
     //TODO get rid of the test connect once advance development to across views control
     public void testConnect(){
         //Log.i(TAG,heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
-        Log.i(TAG, "Attempt to read BLEchar" + heroGatt.readCharacteristic(heroGatt.getService(TINY_TILE_TEST_SERVICE).getCharacteristic(TINY_TILE_TEST_CHAR)));
+        Log.i(TAG, "Attempt to read BLEchar" + heroGatt.readCharacteristic(heroGatt.getService(TINY_TILE_BATTERY_SERVICE).getCharacteristic(TINY_TILE_BATTERY_LEVEL_CHAR)));
         pause(100);
+
+        handToggle();
+    }
+
+    public void handToggle() {
+        Log.i(TAG, "Attempt to write to HERO");
+
+        if (toggle)
+            heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR).setValue(MANUAL_EXTEND, BluetoothGattCharacteristic.FORMAT_SINT32, 0);
+        else
+            heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR).setValue(MANUAL_CONTRACT, BluetoothGattCharacteristic.FORMAT_SINT32, 0);
+
+        toggle = !toggle;
+
+        pause(1000);
+        boolean temp = heroGatt.writeCharacteristic(heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR));
         //batteryDisplay.setText("HERO battery:"+battery);
+        pause(1000);
+    }
+
+    //TODO change so any string can be passed not just the two commands
+    public void handToggle(String command) {
+        Log.i(TAG, "Attempt to write to HERO");
+
+        if (command.equals("open"))
+            heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR).setValue(MANUAL_EXTEND, BluetoothGattCharacteristic.FORMAT_SINT32, 0);
+        else
+            heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR).setValue(MANUAL_CONTRACT, BluetoothGattCharacteristic.FORMAT_SINT32, 0);
+
+        toggle = !toggle;
+
+        pause(1000);
+        boolean temp = heroGatt.writeCharacteristic(heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR));
+        //batteryDisplay.setText("HERO battery:"+battery);
+        pause(1000);
     }
 
 
@@ -401,7 +454,7 @@ public class BluetoothConnect extends AppCompatActivity {
     //For across view data write call method
     //TODO test to see if static method works from other views
     public void writeToHero(byte[] dat){
-        pause();
+       /* pause();
         //Characteristic is re written here on the app side
 
         Log.i(TAG, heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID).setValue(dat) + "");
@@ -409,17 +462,17 @@ public class BluetoothConnect extends AppCompatActivity {
         //request is made for the rewritten characteristic from app to be pushed to the robot
         //callback then handles that request
         Log.i(TAG,heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
-        logBytesSent(dat);
+        logBytesSent(dat);*/
     }
 
     public void readFromHero(){
-        pause();
+       /* pause();
         //Characteristic is re written here on the app side
         //request is made for the rewritten characteristic from app to be pushed to the robot
         //callback then handles that request
         Log.i(TAG,heroGatt.readCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
         pause();
-        Log.i(TAG, "Attempting to execute read ");
+        Log.i(TAG, "Attempting to execute read ");*/
 
     }
 
@@ -431,5 +484,20 @@ public class BluetoothConnect extends AppCompatActivity {
         myRef.setValue(nameList);
         bytesChange++;
     }
+
+    public void changeExtend(int n){
+        extendMotor += n;
+        heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_EXTEND_CHAR).setValue(extendMotor, BluetoothGattCharacteristic.FORMAT_SINT32, 0);
+        heroGatt.writeCharacteristic(heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_EXTEND_CHAR));
+        Log.i(TAG, "Change extension value");
+    }
+
+    public void changeContract(int n){
+        retractMotor += n;
+        heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_CONTRACT_CHAR).setValue(retractMotor, BluetoothGattCharacteristic.FORMAT_SINT32, 0);
+        heroGatt.writeCharacteristic( heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_CONTRACT_CHAR));
+        Log.i(TAG, "Change contract value");
+    }
+
 }
 

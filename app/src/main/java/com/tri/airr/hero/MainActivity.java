@@ -87,6 +87,10 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void goToVoiceControl (View v) {
+        Intent intent = new Intent(MainActivity.this, VoiceControl.class);
+        startActivity(intent);
+    }
 }
 
 

@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "174077758217",
+    "firebase_url": "https://hero-d6297.firebaseio.com",
+    "project_id": "hero-d6297",
+    "storage_bucket": "hero-d6297.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:174077758217:android:076e9f52d007b61e",
+        "android_client_info": {
+          "package_name": "com.tri.airr.hero"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "174077758217-35v69d277hhanga91gv4ldbb4m7uvq68.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tri.airr.hero",
+            "certificate_hash": "a86e1a01537e549798e8801a8ed0a9f72064fca1"
+          }
+        },
+        {
+          "client_id": "174077758217-39580mtq15v6r49t3sg5irojrq3ao1tq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tri.airr.hero",
+            "certificate_hash": "7d876109db84f55533c14211bd52ca5f1d741b20"
+          }
+        },
+        {
+          "client_id": "174077758217-1umithqs1bucr90ladpl8jgs41ln3vai.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQ6atd2A5u7VxaCHSf86ZZcokyrja2dig"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "174077758217-1umithqs1bucr90ladpl8jgs41ln3vai.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

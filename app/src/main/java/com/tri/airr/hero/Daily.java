@@ -60,9 +60,9 @@ public class Daily extends AppCompatActivity {
     byte buffer[];
     private boolean optionSelected;
     //Counter that decides and shows level
-    int flexLev = 0;
-    int extenLev = 0;
-    int spdLev = 0;
+    static int flexLev = 0;
+    static int extenLev = 0;
+    static int spdLev = 0;
     int curr = 0;
     byte [] commandDat =dataPresets.autoThreshhold;
     private StorageReference mStorageRef;
@@ -86,6 +86,7 @@ public class Daily extends AppCompatActivity {
 
 
 
+
     }
     //on and off button
     //TODO bug where if motor is off then select arrow the motor will not turn back on
@@ -105,6 +106,7 @@ public class Daily extends AppCompatActivity {
                 onOff.setBackgroundColor(Color.GREEN);
                 onOff.setText("ON");
                 if (connected) {
+                    //bleMethods.handToggle();
                     bleMethods.writeToHero(dataPresets.turnOn);
                     bleMethods.writeToHero(dataPresets.auto);
                 }
@@ -146,12 +148,16 @@ public class Daily extends AppCompatActivity {
         //Controls the different aspcets of the motor with the up and down arrows
         public void upSelect(View v){
                 if (curr == FLEX) {
-                    if (connected)
+                    if (connected) {
                         bleMethods.readFromHero();
+                        bleMethods.changeContract(-5);
+                    }
                     flexLev++;
                     commandDat[2] = (byte)(commandDat[2] + 15);
-                    if (connected)
+                    if (connected) {
                         bleMethods.writeToHero(commandDat);
+                        bleMethods.changeExtend(5);
+                    }
                 } else if (curr == EXTEN) {
                     extenLev++;
                     commandDat[1] = (byte)(commandDat[1] + 1);
@@ -170,14 +176,18 @@ public class Daily extends AppCompatActivity {
                 if (curr == FLEX && flexLev != 0) {
                     flexLev--;
                     commandDat[2] = (byte)(commandDat[2]-15);
-                    if (connected)
+                    if (connected) {
                         bleMethods.writeToHero(commandDat);
+                        bleMethods.changeContract(5);
+                    }
                 }
                 else if (curr == EXTEN && extenLev != 0) {
                     extenLev--;
                     commandDat[1] = (byte)(commandDat[1] - 1);
-                    if (connected)
+                    if (connected) {
                         bleMethods.writeToHero(commandDat);
+                        bleMethods.changeExtend(-5);
+                    }
                 }
                 else if (curr == SPD && spdLev != 0) {
                     spdLev--;

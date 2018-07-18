@@ -6,4 +6,6 @@
     <color name="backgroundButtonColor"> #add8e6</color>
     <color name="buttonOn">#67f45c</color>
     <color name="buttonOff">#ef231c</color>
+    <color name="openHand">#71e7ff</color>
+    <color name="closeHand">#45ff80</color>
 </resources>

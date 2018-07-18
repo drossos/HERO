@@ -49,7 +49,22 @@ public class RESTTest extends AppCompatActivity {
     //TODO SERVER SIDE FIX GET METHOD TO RETURN ENTIRE DB
     public void sendData(View view){
         Map<String, Object> test = new HashMap();
-        test.put("metric3", (Math.random()*100));
+        test.put("metric3", BluetoothConnect.battery);
+        test.put("metric2", (Math.random()*100));
+        test.put("metric1", (Math.random()*100));
+        test.put("name", "AndroidPhone" + Math.random());
+        JSONObject testJSon = new JSONObject(test);
+
+        request = Volley.newRequestQueue(this);
+
+        rm.JSONObjectRequest(request, BASE_URL, testJSon, Request.Method.POST );
+        rm.JSONArrayRequest(request, BASE_URL, null, Request.Method.GET);
+        Toast.makeText(this, "Test data has been sent", Toast.LENGTH_LONG).show();
+    }
+
+    public void sendData(double metric1, double metric2, double metric3){
+        Map<String, Object> test = new HashMap();
+        test.put("metric3", BluetoothConnect.battery);
         test.put("metric2", (Math.random()*100));
         test.put("metric1", (Math.random()*100));
         test.put("name", "AndroidPhone" + Math.random());
