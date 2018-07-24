@@ -1,9 +1,12 @@
 package com.tri.airr.hero;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattService;
+import android.content.ComponentCallbacks2;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -57,7 +60,9 @@ public class Daily extends AppCompatActivity {
     private Button up;
     private boolean stopThread;
     private Button down;
+    private final String EXTENSION_TITLE = "extenTitle";
     byte buffer[];
+    private SharedPreferences prefs;
     private boolean optionSelected;
     //Counter that decides and shows level
     static int flexLev = 0;
@@ -75,6 +80,9 @@ public class Daily extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setTheme(android.R.style.Widget_Holo);
         setContentView(R.layout.daily_section);
+        //initalize storage for data
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
         //initalizing all buttons and interactive elements
         onOff = (Button) findViewById(R.id.onOff);
         flexion = (Button) findViewById(R.id.flexion);
@@ -84,6 +92,13 @@ public class Daily extends AppCompatActivity {
         up = (Button) findViewById(R.id.up);
         down = (Button) findViewById(R.id.down);
 
+        //initalize data with value
+        extenLev = prefs.getInt(EXTENSION_TITLE , 0);
+
+        if (connected){
+           /* bleMethods.handToggle();
+            bleMethods.handToggle();*/
+        }
 
 
 
@@ -156,13 +171,15 @@ public class Daily extends AppCompatActivity {
                     commandDat[2] = (byte)(commandDat[2] + 15);
                     if (connected) {
                         bleMethods.writeToHero(commandDat);
-                        bleMethods.changeExtend(5);
+
                     }
                 } else if (curr == EXTEN) {
                     extenLev++;
                     commandDat[1] = (byte)(commandDat[1] + 1);
-                    if(connected)
+                    if(connected) {
                         bleMethods.writeToHero(commandDat);
+                        bleMethods.changeExtend(5);
+                    }
                 }
                 else if (curr == SPD) {
                     spdLev++;
@@ -242,6 +259,27 @@ public class Daily extends AppCompatActivity {
             B[i] = (byte)dat[i]+"";
         }
         return B;
+    }
+
+    @Override
+    public void onDestroy(){
+        prefs.edit().putInt(EXTENSION_TITLE, extenLev).commit();
+        super.onDestroy();
+    }
+
+   @Override
+    public void onPause(){
+       prefs.edit().putInt(EXTENSION_TITLE, extenLev).commit();
+        super.onPause();
+    }
+
+    //only activates after a few moments
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        if(level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
+            prefs.edit().putInt(EXTENSION_TITLE, extenLev).commit();
+        }
     }
 }
 

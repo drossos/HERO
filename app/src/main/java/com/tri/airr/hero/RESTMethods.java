@@ -1,10 +1,7 @@
 package com.tri.airr.hero;
 
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -13,12 +10,18 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class RESTMethods extends AppCompatActivity {
     static String tempURL;
     static JSONObject dbContent;
     static JSONArray dbArrContent;
+    static String currID;
+    public RequestQueue req;
     //Used for all requests to the server
     //call request GET with JSON object to fetch single post + addExtension to the url of the id  (for GET all make sure no value is passed in for the JSON)
     //call request PUT with JSON with object to edit + addExtension to the url of the id
@@ -82,4 +85,41 @@ public class RESTMethods extends AppCompatActivity {
 
     }
 
+    //TODO ADD BETTER WAY ON SERVER TO GET A SPECIFIC ENTRY
+
+
+    public static JSONObject  getPrevDBEntry(JSONArray arr, String name) throws JSONException {
+        for (int i =0 ; i < arr.length(); i++){
+            if (arr.getJSONObject(i).getString("name").equals(name)){
+                currID = arr.getJSONObject(i).getString("_id");
+                return arr.getJSONObject(i);
+            }
+        }
+        return null;
+    }
+
+    //TODO THIS TRY CATCH SYSTEM MESSY
+    public JSONObject updateDB(String dbEntryName, int grabChange, int metric2, int metric3){
+        JSONObject prevEntry;
+        JSONObject updatedEntry;
+        try {
+            prevEntry = getPrevDBEntry(dbArrContent, dbEntryName);
+            //createNewJSON(prevEntry);
+            return updatedEntry = createNewJSON(prevEntry);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private JSONObject createNewJSON(JSONObject prev) throws JSONException {
+        Map<String, Object> temp = new HashMap();
+        temp.put("metric3", BluetoothConnect.battery);
+        temp.put("metric2", prev.getDouble("metric2"));
+        temp.put("metric1", prev.getDouble("metric1") + 1 );
+        temp.put("name", prev.getString("name"));
+        JSONObject tempJSon = new JSONObject(temp);
+
+        return tempJSon;
+    }
 }

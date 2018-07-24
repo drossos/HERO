@@ -31,7 +31,16 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
+
 import java.util.UUID;
+
+import static com.tri.airr.hero.BluetoothConnect.TINY_TILE_MOTOR_CONTRACT_CHAR;
+import static com.tri.airr.hero.BluetoothConnect.TINY_TILE_MOTOR_EXTEND_CHAR;
+import static com.tri.airr.hero.BluetoothConnect.TINY_TILE_MOTOR_SERVICE;
+import static com.tri.airr.hero.RESTTest.BASE_URL;
 
 /**
  * Created by drossos on 7/26/2017.
@@ -40,6 +49,11 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
+    private RESTMethods rm = new RESTMethods();
+    public static RequestQueue request;
+
+    //TODO remove just for development to test this one apps capability for data analysis
+    public static final String dbEntry = "HERO_Test";
 
 
     @Override
@@ -48,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
         setTheme(android.R.style.Widget_Holo);
         setContentView(R.layout.activity_main);
 
+        request = Volley.newRequestQueue(this);
+        rm.JSONArrayRequest(request, BASE_URL, null, Request.Method.GET);
 
     }
 

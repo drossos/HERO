@@ -22,6 +22,7 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.speech.tts.Voice;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
@@ -31,8 +32,14 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -44,6 +51,8 @@ import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+
+import static com.tri.airr.hero.RESTTest.BASE_URL;
 
 
 /**
@@ -66,13 +75,13 @@ public class BluetoothConnect extends AppCompatActivity {
     public static BluetoothGatt heroGatt;
     public static int battery;
     //TODO FIND BETTER WAY THAT ALLOWS FOR NON HARDCODED ADRESS
-    public final String HERO_MAC = "84:68:3E:06:CF:36";//"E3:8E:E4:56:FF:4F";
+    public final String HERO_MAC = "84:68:3E:06:CF:36"; //"E3:8E:E4:56:FF:4F";
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
 
-    public static int extendMotor=50;//50 = fully squeeze bottle; 80 = partially squeeze bottle
-    public static int retractMotor=150;//150 = fully extend fingers; 120 = partially extend fingers
+    public static int extendMotor = 50; //50 = fully squeeze bottle; 80 = partially squeeze bottle
+    public static int retractMotor = 140; //150 = fully extend fingers; 120 = partially extend fingers
 
     //NAME TO SEARCH FOR
     public static final String HERO_NAME = "LegoHERO";
@@ -114,15 +123,16 @@ public class BluetoothConnect extends AppCompatActivity {
         startScanningButton = (Button) findViewById(R.id.StartScanButton);
         startScanningButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                /*
-                Currently taken out GPS requierment, if later in development this changes add this code to conditional check of enabled services
-                getApplicationContext().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                 */
+    /*
+    Currently taken out GPS requierment, if later in development this changes add this code to conditional check of enabled services
+    getApplicationContext().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+     */
                 if (heroGatt != null) {
-                    heroGatt.disconnect();
                     heroGatt.close();
+                    heroGatt.disconnect();
+                    //heroGatt.close();
                 }
-                if (!btAdapter.isEnabled()){
+                if (!btAdapter.isEnabled()) {
                     peripheralTextView.setText("Make sure that Bluetooth and GPS services are enabeld");
                 } else {
                     startScanning();
@@ -133,13 +143,13 @@ public class BluetoothConnect extends AppCompatActivity {
         stopScanningButton = (Button) findViewById(R.id.StopScanButton);
         stopScanningButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-               stopScanning();
+                stopScanning();
             }
         });
         stopScanningButton.setVisibility(View.INVISIBLE);
         Button testConnect = (Button) findViewById(R.id.test_connect);
-        testConnect.setOnClickListener(new View.OnClickListener(){
-            public void onClick(View v){
+        testConnect.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
                 testConnect();
             }
         });
@@ -161,16 +171,18 @@ public class BluetoothConnect extends AppCompatActivity {
             builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
                 public void onDismiss(DialogInterface dialog) {
-                    requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
+                    requestPermissions(new String[] {
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                    }, PERMISSION_REQUEST_COARSE_LOCATION);
                 }
             });
             builder.show();
         }
 
 
-        final LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
+        final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             buildAlertMessageNoGps();
         }
 
@@ -223,9 +235,20 @@ public class BluetoothConnect extends AppCompatActivity {
                 Log.i(TAG, "Attempting to start service discovery:" +
                         heroGatt.discoverServices());
 
+                //auto send back to main screen on connect
+                Intent intent = new Intent(BluetoothConnect.this, MainActivity.class);
+                startActivity(intent);
+
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 mConnectionState = STATE_DISCONNECTED;
                 Log.i(TAG, "Disconnected from GATT server.");
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), "Disconnected from HERO, scan to connect again", Toast.LENGTH_LONG).show();
+                    }
+                });
             }
         }
 
@@ -236,10 +259,10 @@ public class BluetoothConnect extends AppCompatActivity {
             if (status == BluetoothGatt.GATT_SUCCESS) {
 
 
-                List<BluetoothGattService> gattServices = heroGatt.getServices();
+                List < BluetoothGattService > gattServices = heroGatt.getServices();
                 Log.e("onServicesDiscovered", "Services count: " + gattServices.size());
 
-               for (BluetoothGattService gattService : gattServices) {
+                for (BluetoothGattService gattService: gattServices) {
                     String serviceUUID = gattService.getUuid().toString();
                     Log.e("onServicesDiscovered", "Service uuid " + serviceUUID);
                 }
@@ -254,11 +277,11 @@ public class BluetoothConnect extends AppCompatActivity {
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
 
             Log.i(TAG, "Attempting to execute write ");
-            if(status != BluetoothGatt.GATT_SUCCESS){
+            if (status != BluetoothGatt.GATT_SUCCESS) {
                 Log.i("onCharacteristicWrite", "Failed write, retrying");
                 gatt.writeCharacteristic(characteristic);
             }
-            Log.i("onCharacteristicWrite","Write Success");
+            Log.i("onCharacteristicWrite", "Write Success");
             super.onCharacteristicWrite(gatt, characteristic, status);
 
 
@@ -270,8 +293,8 @@ public class BluetoothConnect extends AppCompatActivity {
             Log.i(TAG, "in da callback");
             int characValue = heroGatt.getService(TINY_TILE_BATTERY_SERVICE).getCharacteristic(TINY_TILE_BATTERY_LEVEL_CHAR).getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
 
-//        for (byte i : charValue)
-            Log.i(TAG,""+ ("HERO Battery Level: %"+characValue));
+            //        for (byte i : charValue)
+            Log.i(TAG, "" + ("HERO Battery Level: %" + characValue));
             battery = characValue;
 
             /*This all to allow for a active update on HERO battery*/
@@ -282,17 +305,37 @@ public class BluetoothConnect extends AppCompatActivity {
             heroGatt.writeDescriptor(descriptor);
 
             //subscribe for notifications from the characteristic
-            heroGatt.setCharacteristicNotification(heroGatt.getService(TINY_TILE_BATTERY_SERVICE).getCharacteristic(TINY_TILE_BATTERY_LEVEL_CHAR),true);
+            heroGatt.setCharacteristicNotification(heroGatt.getService(TINY_TILE_BATTERY_SERVICE).getCharacteristic(TINY_TILE_BATTERY_LEVEL_CHAR), true);
 
-//            byte[] charValue = characteristic.getValue();
-//
-//            for (byte i : charValue)
-//                Log.i(TAG,i + "");
+            //todo change back to true, but right now unable to properaly handle copnstant updates to the ui
+            //heroGatt.setCharacteristicNotification(heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR), false);
+            //            byte[] charValue = characteristic.getValue();
+            //
+            //            for (byte i : charValue)
+            //                Log.i(TAG,i + "");
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
+
+   /*//todo make so not case sensitive
+   //will read if button is changed on the robot and will update ui
+   if (characteristic.getUuid().equals(TINY_TILE_MOTOR_LEVEL_CHAR)){
+       int characValue = heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR).getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
+       if (characValue == MANUAL_CONTRACT)
+           VoiceControl.text = "close";
+       if (characValue == MANUAL_EXTEND)
+           VoiceControl.text = "open";
+
+       VoiceControl.updateUI.start();
+       try {
+           VoiceControl.updateUI.join();
+       } catch (InterruptedException e) {
+           e.printStackTrace();
+       }
+
+   } else {*/
 
             int characValue = heroGatt.getService(TINY_TILE_BATTERY_SERVICE).getCharacteristic(TINY_TILE_BATTERY_LEVEL_CHAR).getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
             //Log.i(TAG,"InOnChange"+ ("HERO Battery Level: %"+characValue));
@@ -302,12 +345,13 @@ public class BluetoothConnect extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    batteryDisplay.setText("HERO battery:"+battery);
+                    batteryDisplay.setText("HERO battery:" + battery);
                 }
             });
-
-
         }
+
+
+        //}
     };
 
 
@@ -325,7 +369,7 @@ public class BluetoothConnect extends AppCompatActivity {
             // if there is no need to scroll, scrollAmount will be <=0
             if (scrollAmount > 0)
                 peripheralTextView.scrollTo(0, scrollAmount);
-            if(result.getDevice().getName() != null && result.getDevice().getName().equals(HERO_NAME)) {
+            if (result.getDevice().getName() != null && result.getDevice().getName().equals(HERO_NAME)) {
                 hero = result.getDevice();
                 Toast.makeText(getApplicationContext(), "Found HERO", Toast.LENGTH_SHORT).show();
                 heroGatt = result.getDevice().connectGatt(getApplicationContext(), false, heroGattCallBack);
@@ -340,7 +384,8 @@ public class BluetoothConnect extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case PERMISSION_REQUEST_COARSE_LOCATION: {
+            case PERMISSION_REQUEST_COARSE_LOCATION:
+            {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     System.out.println("coarse location permission granted");
                 } else {
@@ -351,8 +396,7 @@ public class BluetoothConnect extends AppCompatActivity {
                     builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
 
                         @Override
-                        public void onDismiss(DialogInterface dialog) {
-                        }
+                        public void onDismiss(DialogInterface dialog) {}
 
                     });
                     builder.show();
@@ -387,13 +431,15 @@ public class BluetoothConnect extends AppCompatActivity {
             }
         });
     }
-    public void connectGatt(){
-        heroGatt.connect();
+    public void connectGatt() {
+        //heroGatt.connect();
         connected = true;
+        boolean temp = heroGatt.requestMtu(1000);
+        heroGatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH);
     }
     //checks to see if it is possible to send data|-used only for testing
     //TODO get rid of the test connect once advance development to across views control
-    public void testConnect(){
+    public void testConnect() {
         //Log.i(TAG,heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
         Log.i(TAG, "Attempt to read BLEchar" + heroGatt.readCharacteristic(heroGatt.getService(TINY_TILE_BATTERY_SERVICE).getCharacteristic(TINY_TILE_BATTERY_LEVEL_CHAR)));
         pause(100);
@@ -411,93 +457,108 @@ public class BluetoothConnect extends AppCompatActivity {
 
         toggle = !toggle;
 
-        pause(1000);
+        //pause(1000);
         boolean temp = heroGatt.writeCharacteristic(heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR));
         //batteryDisplay.setText("HERO battery:"+battery);
-        pause(1000);
+        //pause(1000);
     }
 
     //TODO change so any string can be passed not just the two commands
     public void handToggle(String command) {
         Log.i(TAG, "Attempt to write to HERO");
 
-        if (command.equals("open"))
+        if (command.equals("open")) {
             heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR).setValue(MANUAL_EXTEND, BluetoothGattCharacteristic.FORMAT_SINT32, 0);
-        else
+            RESTMethods rm = new RESTMethods();
+            //  JSONObject updatedEntry = rm.updateDB(MainActivity.dbEntry, 1, 0 , 0);
+            /*RequestQueue req = Volley.newRequestQueue(this);*/
+
+            //   rm.JSONObjectRequest(MainActivity.request, BASE_URL +"/"+ RESTMethods.currID, updatedEntry, Request.Method.PUT);
+        } else
             heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR).setValue(MANUAL_CONTRACT, BluetoothGattCharacteristic.FORMAT_SINT32, 0);
 
         toggle = !toggle;
 
-        pause(1000);
+        //pause(1000);
         boolean temp = heroGatt.writeCharacteristic(heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR));
         //batteryDisplay.setText("HERO battery:"+battery);
-        pause(1000);
+        // pause(1000);
     }
 
 
-    public static void pause(){
-        try{
+    public static void pause() {
+        try {
             Thread.sleep(10);
-        }catch(InterruptedException e){
+        } catch (InterruptedException e) {
             System.out.println("got interrupted!");
         }
     }
 
-    public static void pause(int dur){
-        try{
+    public static void pause(int dur) {
+        try {
             Thread.sleep(dur);
-        }catch(InterruptedException e){
+        } catch (InterruptedException e) {
             System.out.println("got interrupted!");
         }
     }
 
     //For across view data write call method
     //TODO test to see if static method works from other views
-    public void writeToHero(byte[] dat){
-       /* pause();
-        //Characteristic is re written here on the app side
+    public void writeToHero(byte[] dat) {
+  /* pause();
+   //Characteristic is re written here on the app side
 
-        Log.i(TAG, heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID).setValue(dat) + "");
-        pause();
-        //request is made for the rewritten characteristic from app to be pushed to the robot
-        //callback then handles that request
-        Log.i(TAG,heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
-        logBytesSent(dat);*/
+   Log.i(TAG, heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID).setValue(dat) + "");
+   pause();
+   //request is made for the rewritten characteristic from app to be pushed to the robot
+   //callback then handles that request
+   Log.i(TAG,heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
+   logBytesSent(dat);*/
     }
 
-    public void readFromHero(){
-       /* pause();
-        //Characteristic is re written here on the app side
-        //request is made for the rewritten characteristic from app to be pushed to the robot
-        //callback then handles that request
-        Log.i(TAG,heroGatt.readCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
-        pause();
-        Log.i(TAG, "Attempting to execute read ");*/
+    public void readFromHero() {
+  /* pause();
+   //Characteristic is re written here on the app side
+   //request is made for the rewritten characteristic from app to be pushed to the robot
+   //callback then handles that request
+   Log.i(TAG,heroGatt.readCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
+   pause();
+   Log.i(TAG, "Attempting to execute read ");*/
 
     }
 
-    private void logBytesSent(byte[] dat){
-        Daily methods =  new Daily();
+    private void logBytesSent(byte[] dat) {
+        Daily methods = new Daily();
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference(bytesChange + "");
-        List<String> nameList = Arrays.asList(methods.byteToString(dat));
+        List < String > nameList = Arrays.asList(methods.byteToString(dat));
         myRef.setValue(nameList);
         bytesChange++;
     }
 
-    public void changeExtend(int n){
+    public void changeExtend(int n) {
         extendMotor += n;
         heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_EXTEND_CHAR).setValue(extendMotor, BluetoothGattCharacteristic.FORMAT_SINT32, 0);
         heroGatt.writeCharacteristic(heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_EXTEND_CHAR));
         Log.i(TAG, "Change extension value");
     }
 
-    public void changeContract(int n){
+    public void changeContract(int n) {
         retractMotor += n;
         heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_CONTRACT_CHAR).setValue(retractMotor, BluetoothGattCharacteristic.FORMAT_SINT32, 0);
-        heroGatt.writeCharacteristic( heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_CONTRACT_CHAR));
+        heroGatt.writeCharacteristic(heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_CONTRACT_CHAR));
         Log.i(TAG, "Change contract value");
     }
 
-}
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (heroGatt != null) {
+            heroGatt.close();
+            heroGatt.disconnect();
+            //heroGatt.close();
+        }
+    }
 
+
+}
