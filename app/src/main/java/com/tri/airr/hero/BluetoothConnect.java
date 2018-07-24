@@ -237,7 +237,7 @@ public class BluetoothConnect extends AppCompatActivity {
 
                 //auto send back to main screen on connect
                 Intent intent = new Intent(BluetoothConnect.this, MainActivity.class);
-                startActivity(intent);
+                //startActivity(intent);
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 mConnectionState = STATE_DISCONNECTED;

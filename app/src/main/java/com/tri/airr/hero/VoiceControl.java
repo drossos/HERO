@@ -37,17 +37,17 @@ import java.util.Locale;
 
 import static com.tri.airr.hero.BluetoothConnect.connected;
 
-public class VoiceControl extends AppCompatActivity implements RecognitionListener {
+public class VoiceControl extends AppCompatActivity implements RecognitionListener{
 
     Button voiceListen;
     private static final int SPEECH_REQUEST_CODE = 100;
-    private static final int REQUEST_AUDIO = 1;
+    private static final int REQUEST_AUDIO =1;
     private int speechRequestCode;
     private Intent intent;
-    private AudioManager audioManager;
+    private  AudioManager audioManager;
     private TextView currAction;
     private BluetoothConnect blc;
-    private Thread updateMotor;
+    private  Thread updateMotor;
     private long t1;
     private boolean wordFound = false;
     //allow for synchronous threads
@@ -74,15 +74,13 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
             builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
                 public void onDismiss(DialogInterface dialog) {
-                    requestPermissions(new String[] {
-                            Manifest.permission.RECORD_AUDIO
-                    }, REQUEST_AUDIO);
+                    requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_AUDIO);
                 }
             });
             builder.show();
         }
 
-        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        audioManager=(AudioManager)getSystemService(Context.AUDIO_SERVICE);
         audioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
 
 
@@ -131,7 +129,7 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
 
     @Override
     public void onError(int i) {
-        /* Log.i(voiceTag, "error");*/
+       /* Log.i(voiceTag, "error");*/
         spR.startListening(intent);
     }
 
@@ -141,6 +139,7 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
         checkForVoiceMatch(bundle);
 
         spR.startListening(intent);
+
     }
 
     @Override
@@ -156,11 +155,10 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case REQUEST_AUDIO:
-            {
+            case REQUEST_AUDIO: {
                 // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0 &&
-                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
                 } else {
@@ -175,7 +173,7 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
     }
 
     @Override
-    public void onBackPressed() {
+    public void onBackPressed(){
         super.onBackPressed();
         spR.stopListening();
         audioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
@@ -183,30 +181,30 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
     }
 
     @Override
-    public void onDestroy() {
+    public void onDestroy(){
         spR.stopListening();
         audioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
         super.onDestroy();
     }
 
- /* @Override
-  public void onPause(){
-      audioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
-      super.onPause();
-  }*/
+   /* @Override
+    public void onPause(){
+        audioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
+        super.onPause();
+    }*/
 
     //only activates after a few moments
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
-        if (level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
+        if(level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
             audioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
             spR.stopListening();
         }
     }
 
     @Override
-    public void onResume() {
+    public void onResume(){
         spR.startListening(intent);
         audioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
         super.onResume();
@@ -216,18 +214,18 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
     private void checkForVoiceMatch(Bundle bundle) {
         //this time used for finding processing and write time
         t1 = Calendar.getInstance().getTimeInMillis();
-        ArrayList < String > matches = bundle
+        ArrayList<String> matches = bundle
                 .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
         text = "";
-        for (String result: matches) {
+        for (String result : matches) {
             text = checkForCommand(result);
             if (text != "")
                 break;
         }
 
-        if (connected && !text.equals("")) {
+        if (connected && !text.equals("")){
             wordFound = true;
-            updateMotor = new Thread() {
+            updateMotor = new Thread(){
                 public void run() {
                     Looper.prepare();
                     // t1 = Calendar.getInstance().getTimeInMillis();
@@ -235,7 +233,7 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
                     blc.handToggle(text);
                     long t2 = Calendar.getInstance().getTimeInMillis();
 
-                    Log.i(voiceTag, "Process and Write time is : " + (t2 - t1) + " milli");
+                    Log.i(voiceTag,"Process and Write time is : " + (t2-t1) + " milli");
                 }
             };
 
@@ -277,7 +275,7 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
 
     private String checkForCommand(String result) {
         String[] words = result.split(" ");
-        for (int i = 0; i < words.length; i++) {
+        for (int i =0; i < words.length; i++){
             if (words[i].equals("open") || words[i].equals("close"))
                 return words[i];
         }
@@ -285,3 +283,5 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
     }
 
 }
+
+
