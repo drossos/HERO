@@ -13,4 +13,6 @@
     <string name="email_title">Talk to Physician</string>
     <string name="speed_title">Speed</string>
     <string name="battery_message">HERO battery:</string>
+    <string name="title_activity_authentication">Authentication</string>
+    <string name="title_activity_voice_control_no_words">VoiceControlNoWords</string>
 </resources>

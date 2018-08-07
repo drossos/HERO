@@ -1,45 +1,19 @@
 package com.tri.airr.hero;
 
-import android.app.Service;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothAdapter.LeScanCallback;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
-import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanResult;
-import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.annotation.NonNull;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
-import java.util.UUID;
-
-import static com.tri.airr.hero.BluetoothConnect.TINY_TILE_MOTOR_CONTRACT_CHAR;
-import static com.tri.airr.hero.BluetoothConnect.TINY_TILE_MOTOR_EXTEND_CHAR;
-import static com.tri.airr.hero.BluetoothConnect.TINY_TILE_MOTOR_SERVICE;
 import static com.tri.airr.hero.RESTTest.BASE_URL;
 
 /**
@@ -51,9 +25,12 @@ public class MainActivity extends AppCompatActivity {
 
     private RESTMethods rm = new RESTMethods();
     public static RequestQueue request;
-
+    public static String entryName;
+    private FirebaseAnalytics mFirebaseAnalytics;
+    public static FirebaseAuth mAuth;
+    public String GA_TAG = "Google Analytics";
     //TODO remove just for development to test this one apps capability for data analysis
-    public static final String dbEntry = "HERO_Test";
+    public static final String dbEntry = "numtest";
 
 
     @Override
@@ -62,9 +39,36 @@ public class MainActivity extends AppCompatActivity {
         setTheme(android.R.style.Widget_Holo);
         setContentView(R.layout.activity_main);
 
-        request = Volley.newRequestQueue(this);
-        rm.JSONArrayRequest(request, BASE_URL, null, Request.Method.GET);
 
+
+        /*request = Volley.newRequestQueue(this);
+        rm.JSONArrayRequest(request, BASE_URL, null, Request.Method.GET);
+        entryName = "AndroidPhone" + Math.random();*/
+
+        // Obtain the FirebaseAnalytics instance.
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+
+        //check for login
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        //FirebaseUser currentUser =null;
+       // String str =  currentUser.getEmail();
+        updateUI(currentUser);
+    }
+
+    //todo finish
+    //check to see if user signed in
+    private void updateUI(FirebaseUser currentUser) {
+        if (currentUser == null){
+            Intent intent = new Intent(MainActivity.this, Authentication.class);
+            startActivity(intent);
+        } else
+           Authentication.ENTRY_NAME =  PreferenceManager.getDefaultSharedPreferences(this).getString("username", "def");
     }
 
     public void goToDaily(View v) {
@@ -105,6 +109,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void goToVoiceControl (View v) {
         Intent intent = new Intent(MainActivity.this, VoiceControl.class);
+        startActivity(intent);
+    }
+
+    public void goToVoiceNWControl(View v){
+        Intent intent = new Intent(MainActivity.this, VoiceControlNoWords.class);
         startActivity(intent);
     }
 }

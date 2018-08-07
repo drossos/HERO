@@ -23,6 +23,7 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.tts.Voice;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
@@ -35,8 +36,14 @@ import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,6 +56,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -88,6 +96,7 @@ public class BluetoothConnect extends AppCompatActivity {
     //hand states
     public static final int MANUAL_EXTEND = 0;
     public static final int MANUAL_CONTRACT = 1;
+    public static final int MANUAL_RELAX = -1;
     //UUID here are for the different services/characterisits
     public static final UUID RBL_SERVICE_UUID = UUID.fromString("713D0000-503e-4C75-BA94-3148F18D941E");
     public static final UUID RBL_CHAR_TX_UUID = UUID.fromString("713d0002-503e-4c75-ba94-3148f18d941e");
@@ -108,13 +117,71 @@ public class BluetoothConnect extends AppCompatActivity {
     private int bytesChange = 1;
     private static boolean toggle = false;
 
+    // Write a message to the database
+    static FirebaseDatabase database;
+    static DatabaseReference myRef;
+    public static long numGrasps;
+    String firebaseTag = "Firebase";
+    public static HashMap < String, Object > currPatient;
+    public String baseRoot = "/patients";
+    private HashMap < String, Object > initDefMap() {
+        HashMap < String, Object > hm = new HashMap < String, Object > ();
+        hm.put("id", "defValue");
+        hm.put("metric1", 0);
+        hm.put("metric2", 0);
+        hm.put("metric3", 0);
+        hm.put("name", "defName");
 
+        return hm;
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTheme(android.R.style.Widget_Holo);
         setContentView(R.layout.bt_connect);
+
+        // Write a message to the database
+        database = FirebaseDatabase.getInstance();
+
+        myRef = database.getReference("/patients/");
+        DatabaseReference myRef2 = database.getReference("/patients");
+        //TODO CURRENTLY ADDING WAY SO ADD THE DATA UNDER THE PROPER USER WITHIN THE DATABASE
+        Query query = myRef2.orderByChild("name").equalTo(Authentication.ENTRY_NAME);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    String ext = ((HashMap < String, Object > ) dataSnapshot.getValue()).keySet().iterator().next();
+                    baseRoot = baseRoot + "/" + ext;
+                    myRef = database.getReference(baseRoot);
+
+                    currPatient = ((HashMap < String, Object > ) dataSnapshot.child(ext).getValue());
+                    numGrasps = (long) currPatient.get("metric1");
+                } else {
+                    currPatient = initDefMap();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+  /*myRef.addValueEventListener(new ValueEventListener() {
+      @Override
+      public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+      currPatient = (HashMap<String, Object> )dataSnapshot.getValue();
+      numGrasps = (long)currPatient.get("metric1");
+      Log.i(firebaseTag, dataSnapshot.getValue().toString());
+      }
+
+      @Override
+      public void onCancelled(@NonNull DatabaseError databaseError) {
+
+      }
+  });*/
 
         peripheralTextView = (TextView) findViewById(R.id.PeripheralTextView);
         batteryDisplay = (TextView) findViewById(R.id.battery_display);
@@ -153,44 +220,39 @@ public class BluetoothConnect extends AppCompatActivity {
                 testConnect();
             }
         });
+
         btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         btAdapter = btManager.getAdapter();
-        btScanner = btAdapter.getBluetoothLeScanner();
-
         //check if bt enabled and then request to enable
         btCheck();
+
+
 
         // Make sure we have access coarse location enabled, if not, prompt the user to enable it
         //TODO Figure out this gps request better, pretty sure first one does not work , IF REQUIRED LATER IN DEVELOPMENT
 
-        if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("This app needs location access");
-            builder.setMessage("Please grant location access so this app can detect peripherals.");
-            builder.setPositiveButton(android.R.string.ok, null);
-            builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialog) {
-                    requestPermissions(new String[] {
-                            Manifest.permission.ACCESS_COARSE_LOCATION
-                    }, PERMISSION_REQUEST_COARSE_LOCATION);
-                }
-            });
-            builder.show();
-        }
+  /*if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+      final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+      builder.setTitle("This app needs location access");
+      builder.setMessage("Please grant location access so this app can detect peripherals.");
+      builder.setPositiveButton(android.R.string.ok, null);
+      builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+          @Override
+          public void onDismiss(DialogInterface dialog) {
+              requestPermissions(new String[] {
+                      Manifest.permission.ACCESS_COARSE_LOCATION
+              }, PERMISSION_REQUEST_COARSE_LOCATION);
+          }
+      });
+      builder.show();
+  }*/
 
 
         final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            buildAlertMessageNoGps();
-        }
-
-
-
-
-
-
+  /*if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+      buildAlertMessageNoGps();
+  }*/
     }
 
 
@@ -201,10 +263,15 @@ public class BluetoothConnect extends AppCompatActivity {
         if (!btAdapter.isEnabled()) {
             Intent enableAdapter = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableAdapter, 0);
-
         }
-
     }
+
+    //to allow for scanner to only be established on response
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        btScanner = btAdapter.getBluetoothLeScanner();
+    }
+
 
     private void buildAlertMessageNoGps() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -357,7 +424,6 @@ public class BluetoothConnect extends AppCompatActivity {
 
     // Device scan callback, searches available devices and then displays and connects to HERO
     //TODO conisder making a different way to display devices so just not list of them
-    //TODO currently goes based off of MAC adress which changes with each different device, for more practical use make it connect via name or some other way
     private ScanCallback leScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
@@ -409,6 +475,7 @@ public class BluetoothConnect extends AppCompatActivity {
     public void startScanning() {
         System.out.println("start scanning");
         peripheralTextView.setText("");
+        btScanner = btAdapter.getBluetoothLeScanner();
         startScanningButton.setVisibility(View.INVISIBLE);
         stopScanningButton.setVisibility(View.VISIBLE);
         AsyncTask.execute(new Runnable() {
@@ -440,11 +507,13 @@ public class BluetoothConnect extends AppCompatActivity {
     //checks to see if it is possible to send data|-used only for testing
     //TODO get rid of the test connect once advance development to across views control
     public void testConnect() {
-        //Log.i(TAG,heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
-        Log.i(TAG, "Attempt to read BLEchar" + heroGatt.readCharacteristic(heroGatt.getService(TINY_TILE_BATTERY_SERVICE).getCharacteristic(TINY_TILE_BATTERY_LEVEL_CHAR)));
-        pause(100);
+        if (connected) {
+            //Log.i(TAG,heroGatt.writeCharacteristic(heroGatt.getService(RBL_SERVICE_UUID).getCharacteristic(RBL_CHAR_RX_UUID)) + " Attempt at writing Characteristic" );
+            Log.i(TAG, "Attempt to read BLEchar" + heroGatt.readCharacteristic(heroGatt.getService(TINY_TILE_BATTERY_SERVICE).getCharacteristic(TINY_TILE_BATTERY_LEVEL_CHAR)));
+            pause(100);
 
-        handToggle();
+            handToggle();
+        }
     }
 
     public void handToggle() {
@@ -458,7 +527,7 @@ public class BluetoothConnect extends AppCompatActivity {
         toggle = !toggle;
 
         //pause(1000);
-        boolean temp = heroGatt.writeCharacteristic(heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR));
+        //boolean temp = heroGatt.writeCharacteristic(heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR));
         //batteryDisplay.setText("HERO battery:"+battery);
         //pause(1000);
     }
@@ -469,13 +538,12 @@ public class BluetoothConnect extends AppCompatActivity {
 
         if (command.equals("open")) {
             heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR).setValue(MANUAL_EXTEND, BluetoothGattCharacteristic.FORMAT_SINT32, 0);
-            RESTMethods rm = new RESTMethods();
-            //  JSONObject updatedEntry = rm.updateDB(MainActivity.dbEntry, 1, 0 , 0);
-            /*RequestQueue req = Volley.newRequestQueue(this);*/
-
-            //   rm.JSONObjectRequest(MainActivity.request, BASE_URL +"/"+ RESTMethods.currID, updatedEntry, Request.Method.PUT);
-        } else
+            currPatient.put("metric1", ++numGrasps);
+            myRef.setValue(currPatient);
+        } else if (command.equals("close"))
             heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR).setValue(MANUAL_CONTRACT, BluetoothGattCharacteristic.FORMAT_SINT32, 0);
+        else
+            heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR).setValue(MANUAL_RELAX, BluetoothGattCharacteristic.FORMAT_SINT32, 0);
 
         toggle = !toggle;
 
@@ -529,10 +597,6 @@ public class BluetoothConnect extends AppCompatActivity {
 
     private void logBytesSent(byte[] dat) {
         Daily methods = new Daily();
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference(bytesChange + "");
-        List < String > nameList = Arrays.asList(methods.byteToString(dat));
-        myRef.setValue(nameList);
         bytesChange++;
     }
 

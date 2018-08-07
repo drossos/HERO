@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "26.0.1"
+    buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId "com.tri.airr.hero"
         minSdkVersion 23
@@ -22,21 +22,23 @@ android {
 }
 
 dependencies {
+    implementation 'com.google.firebase:firebase-core:16.0.1'
+    implementation 'com.google.firebase:firebase-auth:16.0.1'
+    implementation 'com.google.firebase:firebase-storage:16.0.1'
+    implementation 'com.google.firebase:firebase-database:16.0.1'
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    androidTestCompile 'com.android.support.test:runner:1.0.2'
+
     androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.2'
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha7'
-    compile 'com.google.firebase:firebase-storage:10.0.1'
-    compile 'com.google.firebase:firebase-auth:10.0.1'
-    compile 'com.google.firebase:firebase-database:10.0.1'
     compile 'com.google.code.gson:gson:2.4'
     compile 'eu.the4thfloor.volley:com.android.volley:2015.05.28'
 }
 
 repositories {
     jcenter()
+    maven { url "https://maven.google.com" }
 }
 
 

@@ -31,6 +31,14 @@
           }
         },
         {
+          "client_id": "174077758217-dbqllmc7h3le8artpc0otd38jjcjs8lp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tri.airr.hero",
+            "certificate_hash": "aee395d6f4444a6224004d93a01002c1c99f97e1"
+          }
+        },
+        {
           "client_id": "174077758217-1umithqs1bucr90ladpl8jgs41ln3vai.apps.googleusercontent.com",
           "client_type": 3
         }

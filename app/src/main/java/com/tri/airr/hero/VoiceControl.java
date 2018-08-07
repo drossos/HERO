@@ -27,6 +27,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
+import com.google.firebase.analytics.FirebaseAnalytics;
+
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
@@ -36,22 +42,25 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.tri.airr.hero.BluetoothConnect.connected;
+import static com.tri.airr.hero.BluetoothConnect.pause;
+import static com.tri.airr.hero.RESTTest.BASE_URL;
 
 public class VoiceControl extends AppCompatActivity implements RecognitionListener{
 
     Button voiceListen;
-    private static final int SPEECH_REQUEST_CODE = 100;
-    private static final int REQUEST_AUDIO =1;
-    private int speechRequestCode;
-    private Intent intent;
-    private  AudioManager audioManager;
-    private TextView currAction;
-    private BluetoothConnect blc;
-    private  Thread updateMotor;
-    private long t1;
-    private boolean wordFound = false;
+    protected static final int SPEECH_REQUEST_CODE = 100;
+    protected static final int REQUEST_AUDIO =1;
+    protected int speechRequestCode;
+    protected Intent intent;
+    protected  AudioManager audioManager;
+    protected TextView currAction;
+    protected BluetoothConnect blc;
+    protected  Thread updateMotor;
+    protected long t1;
+    protected boolean wordFound = false;
+    protected FirebaseAnalytics fbAnalytics;
     //allow for synchronous threads
-    private String text;
+    protected String text;
     SpeechRecognizer spR;
     VoiceInteractionService voiceService;
     AlwaysOnHotwordDetector hotwordDetector;
@@ -59,6 +68,7 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
 
     String voiceTag = "Hotword";
 
+    public int numGrasps = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,16 +96,17 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
 
         intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, "en-US");
+       // intent.putExtra(RecognizerIntent.EXTRA)
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         //durration of quiet before words are done
         intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 10);
         //Used to modify the number of similar sounds words
         intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
-
         spR = SpeechRecognizer.createSpeechRecognizer(this);
         spR.setRecognitionListener(this);
         spR.startListening(intent);
 
+        fbAnalytics = FirebaseAnalytics.getInstance(this);
     }
 
     @Override
@@ -124,21 +135,25 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
     public void onEndOfSpeech() {
         //display time it listened for
         Log.i(voiceTag, "Listened for " + (Calendar.getInstance().getTimeInMillis() - t1) + " millis");
-
     }
 
     @Override
     public void onError(int i) {
        /* Log.i(voiceTag, "error");*/
+
+        spR.destroy();
+        spR = null;
+        spR = SpeechRecognizer.createSpeechRecognizer(this);
+        spR.setRecognitionListener(this);
         spR.startListening(intent);
+
+
     }
 
     @Override
     public void onResults(Bundle bundle) {
         Log.i(voiceTag, "onResults");
         checkForVoiceMatch(bundle);
-
-        spR.startListening(intent);
 
     }
 
@@ -175,16 +190,21 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
     @Override
     public void onBackPressed(){
         super.onBackPressed();
-        spR.stopListening();
+        spR.destroy();
+        spR = null;
+        logGrasp();
         audioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
 
     }
 
     @Override
     public void onDestroy(){
-        spR.stopListening();
+        /*spR.destroy();
+        spR = null;*/
+        //spR.stopListening();
         audioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
         super.onDestroy();
+        logGrasp();
     }
 
    /* @Override
@@ -200,6 +220,7 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
         if(level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
             audioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
             spR.stopListening();
+            logGrasp();
         }
     }
 
@@ -211,7 +232,7 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
 
     }
 
-    private void checkForVoiceMatch(Bundle bundle) {
+    protected void checkForVoiceMatch(Bundle bundle) {
         //this time used for finding processing and write time
         t1 = Calendar.getInstance().getTimeInMillis();
         ArrayList<String> matches = bundle
@@ -234,31 +255,21 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
                     long t2 = Calendar.getInstance().getTimeInMillis();
 
                     Log.i(voiceTag,"Process and Write time is : " + (t2-t1) + " milli");
+
+                    //increase on grasp incrementing number of grasps
+                   /* RESTMethods rm = new RESTMethods();
+                    JSONObject updatedEntry = rm.incrimentGraspDB(MainActivity.dbEntry, 1);
+                    RequestQueue req = Volley.newRequestQueue(getApplicationContext());
+                    rm.JSONObjectRequest(req, BASE_URL +"/"+ RESTMethods.currID, updatedEntry, Request.Method.PUT);
+
+                    rm.JSONArrayRequest(req, BASE_URL, null, Request.Method.GET);*/
+                   // Log.i("dataLog" , "Grasp has been logged to the server");
+
+
                 }
             };
 
-            Thread updateUI = new Thread() {
-                public void run() {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            //changing color
-                            currAction.setTextColor(Color.BLACK);
-                            Log.i(voiceTag, text + "ing");
-                            if (text.equals("open")) {
-                                currAction.setText("OPENING");
-                                currAction.setBackgroundColor(getResources().getColor(R.color.openHand));
-                                updateMotor.start();
-                            } else {
-                                currAction.setText("CLOSING");
-                                currAction.setBackgroundColor(getResources().getColor(R.color.closeHand));
-                                updateMotor.start();
-                            }
-                            //spR.startListening(intent);
-                        }
-                    });
-                }
-            };
+            Thread updateUI = createUIThread();
 
             updateUI.start();
             // updateMotor.start();
@@ -271,12 +282,53 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
                 e.printStackTrace();
             }
         }
+
+        spR.startListening(intent);
+
     }
 
-    private String checkForCommand(String result) {
+    protected Thread createUIThread() {
+        Thread updateUI = new Thread() {
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //changing color
+                        currAction.setTextColor(Color.BLACK);
+                        Log.i(voiceTag, text + "ing");
+                        if (text.equals("open")) {
+                            currAction.setText("OPENING");
+                            currAction.setBackgroundColor(getResources().getColor(R.color.openHand));
+                            updateMotor.start();
+                            numGrasps++;
+                        } else if (text.equals("close")){
+                            currAction.setText("CLOSING");
+                            currAction.setBackgroundColor(getResources().getColor(R.color.closeHand));
+                            updateMotor.start();
+                        }else {
+                            currAction.setText("RELAXING");
+                            currAction.setBackgroundColor(getResources().getColor(R.color.material_grey_100));
+                            updateMotor.start();
+                        }
+                        //spR.startListening(intent);
+                    }
+                });
+            }
+        };
+
+        return updateUI;
+    }
+
+    private void logGrasp() {
+        Bundle params = new Bundle();
+        params.putInt("grasp_num", numGrasps);
+        fbAnalytics.logEvent(MainActivity.entryName+"_graps", params);
+    }
+
+    protected String checkForCommand(String result) {
         String[] words = result.split(" ");
         for (int i =0; i < words.length; i++){
-            if (words[i].equals("open") || words[i].equals("close"))
+            if (words[i].equals("open") || words[i].equals("close") || words[i].equals("relax"))
                 return words[i];
         }
         return "";

@@ -90,15 +90,31 @@
         android:layout_marginBottom="15dp"
         android:id="@+id/rest_test_connect"
         />-->
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
 
     <Button
         android:id="@+id/voice_control_goto"
-        android:layout_width="300dp"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/scan"
         android:layout_centerHorizontal="true"
         android:onClick="goToVoiceControl"
-        android:text="Go To Voice Control" />
+        android:text="Go To Voice Commands"
+        android:layout_gravity="left"/>
+
+    <Button
+        android:id="@+id/voice_nw_control_goto"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/scan"
+        android:layout_centerHorizontal="true"
+        android:onClick="goToVoiceNWControl"
+        android:text="Go To Voice Control"
+        android:layout_gravity="left" />
+    </TableRow>
 
 
 

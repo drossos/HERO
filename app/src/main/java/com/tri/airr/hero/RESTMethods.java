@@ -99,7 +99,7 @@ public class RESTMethods extends AppCompatActivity {
     }
 
     //TODO THIS TRY CATCH SYSTEM MESSY
-    public JSONObject updateDB(String dbEntryName, int grabChange, int metric2, int metric3){
+    public JSONObject incrimentGraspDB(String dbEntryName, int grabChange){
         JSONObject prevEntry;
         JSONObject updatedEntry;
         try {
