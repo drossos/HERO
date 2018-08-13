@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_main"
+        android:icon="@drawable/ic_home_black_24dp"
+        android:title="Main"/>
+
+    <item
+        android:id="@+id/nav_daily"
+        android:icon="@drawable/ic_event_available_black_24dp"
+        android:title="Daily"/>
+
+    <item
+        android:id="@+id/nav_stretch"
+        android:icon="@drawable/ic_fitness_center_black_24dp"
+        android:title="Exercise"/>
+
+   <!-- <item
+        android:id="@+id/nav_exercise"
+        android:icon="@android:drawable/arrow_up_float"
+        android:title="Exercise"/>-->
+
+    <item
+        android:id="@+id/nav_results"
+        android:icon="@drawable/ic_poll_black_24dp"
+        android:title="Results"/>
+
+
+
+</menu>

@@ -17,13 +17,16 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -45,7 +48,7 @@ import static com.tri.airr.hero.BluetoothConnect.connected;
 import static com.tri.airr.hero.BluetoothConnect.pause;
 import static com.tri.airr.hero.RESTTest.BASE_URL;
 
-public class VoiceControl extends AppCompatActivity implements RecognitionListener{
+public class VoiceControl extends Fragment implements RecognitionListener{
 
     Button voiceListen;
     protected static final int SPEECH_REQUEST_CODE = 100;
@@ -69,15 +72,22 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
     String voiceTag = "Hotword";
 
     public int numGrasps = 0;
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_voice_control);
 
-        currAction = (TextView) findViewById(R.id.current_action);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.activity_voice_control, container, false);
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+
+        currAction = (TextView) getView().findViewById(R.id.current_action);
         blc = new BluetoothConnect();
-        if (this.checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        if (getContext().checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            final AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
             builder.setTitle("This app needs acess to mic");
             builder.setMessage("Please grant audio record access so this app");
             builder.setPositiveButton(android.R.string.ok, null);
@@ -90,7 +100,7 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
             builder.show();
         }
 
-        audioManager=(AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        audioManager=(AudioManager)getContext().getSystemService(Context.AUDIO_SERVICE);
         audioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
 
 
@@ -102,11 +112,11 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
         intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 10);
         //Used to modify the number of similar sounds words
         intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
-        spR = SpeechRecognizer.createSpeechRecognizer(this);
+        spR = SpeechRecognizer.createSpeechRecognizer(getContext());
         spR.setRecognitionListener(this);
         spR.startListening(intent);
 
-        fbAnalytics = FirebaseAnalytics.getInstance(this);
+        fbAnalytics = FirebaseAnalytics.getInstance(getContext());
     }
 
     @Override
@@ -143,9 +153,13 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
 
         spR.destroy();
         spR = null;
-        spR = SpeechRecognizer.createSpeechRecognizer(this);
-        spR.setRecognitionListener(this);
-        spR.startListening(intent);
+        if (getContext() != null) {
+            spR = SpeechRecognizer.createSpeechRecognizer(getContext());
+            spR.setRecognitionListener(this);
+            spR.startListening(intent);
+        } else {
+            switchFragment();
+        }
 
 
     }
@@ -187,7 +201,7 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
         }
     }
 
-    @Override
+  /*  @Override
     public void onBackPressed(){
         super.onBackPressed();
         spR.destroy();
@@ -195,7 +209,7 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
         logGrasp();
         audioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
 
-    }
+    }*/
 
     @Override
     public void onDestroy(){
@@ -204,6 +218,11 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
         //spR.stopListening();
         audioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
         super.onDestroy();
+        //logGrasp();
+    }
+
+    public void switchFragment(){
+        audioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
         logGrasp();
     }
 
@@ -213,7 +232,7 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
         super.onPause();
     }*/
 
-    //only activates after a few moments
+ /*   //only activates after a few moments
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
@@ -223,7 +242,7 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
             logGrasp();
         }
     }
-
+*/
     @Override
     public void onResume(){
         spR.startListening(intent);
@@ -290,7 +309,7 @@ public class VoiceControl extends AppCompatActivity implements RecognitionListen
     protected Thread createUIThread() {
         Thread updateUI = new Thread() {
             public void run() {
-                runOnUiThread(new Runnable() {
+                getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         //changing color

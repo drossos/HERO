@@ -15,4 +15,9 @@
     <string name="battery_message">HERO battery:</string>
     <string name="title_activity_authentication">Authentication</string>
     <string name="title_activity_voice_control_no_words">VoiceControlNoWords</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="max_grasps">300</string>
 </resources>

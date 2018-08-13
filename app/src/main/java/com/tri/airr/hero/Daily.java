@@ -7,9 +7,12 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.animation.AlphaAnimation;
 import android.widget.Button;
@@ -45,7 +48,7 @@ import static com.tri.airr.hero.BluetoothConnect.motorControl;
  * Created by drossos on 7/26/2017.
  */
 
-public class Daily extends AppCompatActivity {
+public class Daily extends Fragment {
     BluetoothConnect bleMethods = new BluetoothConnect();
     CommandBytes dataPresets = new CommandBytes();
     boolean on = false;
@@ -74,23 +77,26 @@ public class Daily extends AppCompatActivity {
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.daily_section, container, false);
+    }
 
-        //Var that shows which is current option selected
-        super.onCreate(savedInstanceState);
-        setTheme(android.R.style.Widget_Holo);
-        setContentView(R.layout.daily_section);
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
         //initalize storage for data
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
         //initalizing all buttons and interactive elements
-        onOff = (Button) findViewById(R.id.onOff);
-        flexion = (Button) findViewById(R.id.flexion);
-        extension = (Button) findViewById(R.id.extension);
-        speed = (Button) findViewById(R.id.speed);
-        descript = (TextView) findViewById(R.id.description);
-        up = (Button) findViewById(R.id.up);
-        down = (Button) findViewById(R.id.down);
+        onOff = (Button) getView().findViewById(R.id.onOff);
+        flexion = (Button) getView().findViewById(R.id.flexion);
+        extension = (Button) getView().findViewById(R.id.extension);
+        speed = (Button) getView().findViewById(R.id.speed);
+        descript = (TextView) getView().findViewById(R.id.description);
+        up = (Button) getView().findViewById(R.id.up);
+        down = (Button) getView().findViewById(R.id.down);
 
         //initalize data with value
         extenLev = prefs.getInt(EXTENSION_TITLE , 0);
@@ -100,12 +106,52 @@ public class Daily extends AppCompatActivity {
             bleMethods.handToggle();*/
         }
 
+        onOff.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onOffSelect();
+            }
+        });
 
+        flexion.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                flexSelect();
+            }
+        });
+
+        extension.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                extenSelect();
+            }
+        });
+
+        speed.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                speedSelect();
+            }
+        });
+
+        up.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                upSelect();
+            }
+        });
+
+        down.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                downSelect();
+            }
+        });
 
     }
     //on and off button
     //TODO bug where if motor is off then select arrow the motor will not turn back on
-        public void onOffSelect(View v) {
+        public void onOffSelect() {
             if (on) {
                 on = false;
                 onOff.setBackgroundColor(Color.RED);
@@ -129,7 +175,7 @@ public class Daily extends AppCompatActivity {
         }
 
 
-        public void flexSelect (View c){
+        public void flexSelect (){
                 optionSelected = true;
                 curr = FLEX;
                 flexion.setBackgroundColor(Color.GRAY);
@@ -138,7 +184,7 @@ public class Daily extends AppCompatActivity {
                 updateStatus(curr);
             }
 
-        public void extenSelect(View v) {
+        public void extenSelect() {
                 optionSelected = true;
                 curr = EXTEN;
                 flexion.setBackgroundColor(Color.parseColor("#add8e6"));
@@ -150,7 +196,7 @@ public class Daily extends AppCompatActivity {
 
 
 
-       public void speedSelect(View v){
+       public void speedSelect(){
                 optionSelected = true;
                 curr = SPD;
                 speed.setBackgroundColor(Color.GRAY);
@@ -161,7 +207,7 @@ public class Daily extends AppCompatActivity {
 
 
         //Controls the different aspcets of the motor with the up and down arrows
-        public void upSelect(View v){
+        public void upSelect(){
                 if (curr == FLEX) {
                     if (connected) {
                         bleMethods.readFromHero();
@@ -189,7 +235,7 @@ public class Daily extends AppCompatActivity {
 
             }
 
-       public void downSelect(View v){
+       public void downSelect(){
                 if (curr == FLEX && flexLev != 0) {
                     flexLev--;
                     commandDat[2] = (byte)(commandDat[2]-15);
@@ -217,7 +263,7 @@ public class Daily extends AppCompatActivity {
 
 
     public void updateStatus(int curr) {
-        descript = (TextView) findViewById(R.id.description);
+        descript = (TextView) getView().findViewById(R.id.description);
         if (curr == FLEX) {
             descript.setText("Flexion: " + flexLev);
         }
@@ -273,14 +319,14 @@ public class Daily extends AppCompatActivity {
         super.onPause();
     }
 
-    //only activates after a few moments
-    @Override
+    //TODO MAKE THIS WORK FOR THE NEW FRAGMENT VERSION
+   /* @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
         if(level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
             prefs.edit().putInt(EXTENSION_TITLE, extenLev).commit();
         }
-    }
+    }*/
 }
 
 

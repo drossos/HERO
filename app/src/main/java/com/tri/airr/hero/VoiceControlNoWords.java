@@ -9,6 +9,9 @@ import android.service.voice.AlwaysOnHotwordDetector;
 import android.service.voice.VoiceInteractionService;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -24,13 +27,18 @@ public class VoiceControlNoWords extends VoiceControl {
     private TextView currActionNW;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_voice_control_no_words);
-
-        currActionNW = (TextView) findViewById(R.id.current_action_nw);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.activity_voice_control_no_words, container, false);
     }
 
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        currActionNW = (TextView) getView().findViewById(R.id.current_action_nw);
+    }
 
     @Override
     protected String checkForCommand(String result){
@@ -57,7 +65,7 @@ public class VoiceControlNoWords extends VoiceControl {
     protected Thread createUIThread(){
         Thread updateUI = new Thread() {
             public void run() {
-                runOnUiThread(new Runnable() {
+                getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         //changing color

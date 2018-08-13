@@ -96,7 +96,7 @@ public class Authentication extends Activity {
 
 
     private void returnToMain() {
-        Intent intent = new Intent(Authentication.this, MainActivity.class);
+        Intent intent = new Intent(Authentication.this, Home.class);
         startActivity(intent);
     }
 

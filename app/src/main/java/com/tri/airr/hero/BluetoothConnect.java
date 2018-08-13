@@ -117,57 +117,13 @@ public class BluetoothConnect extends AppCompatActivity {
     private int bytesChange = 1;
     private static boolean toggle = false;
 
-    // Write a message to the database
-    static FirebaseDatabase database;
-    static DatabaseReference myRef;
-    public static long numGrasps;
-    String firebaseTag = "Firebase";
-    public static HashMap < String, Object > currPatient;
-    public String baseRoot = "/patients";
-    private HashMap < String, Object > initDefMap() {
-        HashMap < String, Object > hm = new HashMap < String, Object > ();
-        hm.put("id", "defValue");
-        hm.put("metric1", 0);
-        hm.put("metric2", 0);
-        hm.put("metric3", 0);
-        hm.put("name", "defName");
 
-        return hm;
-    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTheme(android.R.style.Widget_Holo);
         setContentView(R.layout.bt_connect);
-
-        // Write a message to the database
-        database = FirebaseDatabase.getInstance();
-
-        myRef = database.getReference("/patients/");
-        DatabaseReference myRef2 = database.getReference("/patients");
-        //TODO CURRENTLY ADDING WAY SO ADD THE DATA UNDER THE PROPER USER WITHIN THE DATABASE
-        Query query = myRef2.orderByChild("name").equalTo(Authentication.ENTRY_NAME);
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.getValue() != null) {
-                    String ext = ((HashMap < String, Object > ) dataSnapshot.getValue()).keySet().iterator().next();
-                    baseRoot = baseRoot + "/" + ext;
-                    myRef = database.getReference(baseRoot);
-
-                    currPatient = ((HashMap < String, Object > ) dataSnapshot.child(ext).getValue());
-                    numGrasps = (long) currPatient.get("metric1");
-                } else {
-                    currPatient = initDefMap();
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
 
   /*myRef.addValueEventListener(new ValueEventListener() {
       @Override
@@ -303,7 +259,7 @@ public class BluetoothConnect extends AppCompatActivity {
                         heroGatt.discoverServices());
 
                 //auto send back to main screen on connect
-                Intent intent = new Intent(BluetoothConnect.this, MainActivity.class);
+                Intent intent = new Intent(BluetoothConnect.this, Home.class);
                 startActivity(intent);
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -538,8 +494,8 @@ public class BluetoothConnect extends AppCompatActivity {
 
         if (command.equals("open")) {
             heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR).setValue(MANUAL_EXTEND, BluetoothGattCharacteristic.FORMAT_SINT32, 0);
-            currPatient.put("metric1", ++numGrasps);
-            myRef.setValue(currPatient);
+            MainActivity.db.currPatient.put("metric1", ++MainActivity.db.numGrasps);
+            MainActivity.db.myRef.setValue(MainActivity.db.currPatient);
         } else if (command.equals("close"))
             heroGatt.getService(TINY_TILE_MOTOR_SERVICE).getCharacteristic(TINY_TILE_MOTOR_LEVEL_CHAR).setValue(MANUAL_CONTRACT, BluetoothGattCharacteristic.FORMAT_SINT32, 0);
         else
