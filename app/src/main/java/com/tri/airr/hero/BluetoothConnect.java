@@ -187,7 +187,7 @@ public class BluetoothConnect extends AppCompatActivity {
         // Make sure we have access coarse location enabled, if not, prompt the user to enable it
         //TODO Figure out this gps request better, pretty sure first one does not work , IF REQUIRED LATER IN DEVELOPMENT
 
-  /*if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+  if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
       final AlertDialog.Builder builder = new AlertDialog.Builder(this);
       builder.setTitle("This app needs location access");
       builder.setMessage("Please grant location access so this app can detect peripherals.");
@@ -201,7 +201,7 @@ public class BluetoothConnect extends AppCompatActivity {
           }
       });
       builder.show();
-  }*/
+  }
 
 
         final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
